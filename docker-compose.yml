@@ -1,0 +1,15 @@
+# Avvio in sala: docker compose up
+# Plancia: http://localhost:8080/plancia  ·  Pubblico (proiettore, schermo intero): http://localhost:8080/pubblico
+services:
+  lascossa:
+    build: .
+    image: lascossa
+    ports:
+      # Solo localhost: plancia e pubblico girano sullo stesso portatile. Per una plancia su
+      # tablet in Wi-Fi togliere "127.0.0.1:" e attivare il PIN in dati/config.json.
+      - "127.0.0.1:8080:8080"
+    volumes:
+      # Domande, foto e parametri si cambiano qui senza ricostruire l'immagine;
+      # i registri delle partite finiscono in dati/partite/.
+      - ./dati:/dati
+    restart: unless-stopped

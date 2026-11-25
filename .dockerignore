@@ -1,0 +1,9 @@
+.git
+.vscode
+.claude
+build
+web/node_modules
+web/dist
+dati/partite
+*.md
+!web/**/*.md

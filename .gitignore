@@ -1,2 +1,12 @@
 build/
 .vscode/
+
+# web
+web/node_modules/
+web/dist/
+
+# registri delle partite (dati di serata, non sorgenti)
+dati/partite/
+
+# impostazioni personali di Claude Code
+.claude/settings.local.json

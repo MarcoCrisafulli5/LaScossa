@@ -35,12 +35,19 @@ public:
     IdModalita id() const override { return IdModalita::Estas; }
     Esito gestisci(const Evento& e, Traccia* t) override;
     std::string_view nome_stato() const override { return nome(stato_); }
+    std::unique_ptr<Modalita> clona() const override { return std::make_unique<Estas>(*this); }
 
     Stato stato() const { return stato_; }
     int categoria() const { return categoria_; }
     const OggettoEstas* oggetto_corrente() const;
     const CicloDomanda* domanda() const { return domanda_ ? &*domanda_ : nullptr; }
     int concorrente_di_turno() const { return turni_.corrente(); }
+    int numero_concorrenti() const { return turni_.numero(); }
+    const std::vector<CategoriaEstas>& categorie() const { return categorie_; }
+    // Oggetti della categoria già portati in gioco (compreso quello corrente).
+    std::size_t giocati(int cat) const {
+        return categoria_valida(cat) ? prossimo_[static_cast<std::size_t>(cat)] : 0;
+    }
 
     static std::string_view nome(Stato s);
 

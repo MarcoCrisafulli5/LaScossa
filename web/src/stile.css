@@ -1,0 +1,178 @@
+/* Parametri grafici. La grafica è segnaposto (decisione del 24/11): logo, colori e font
+   definitivi si sostituiscono qui, senza toccare i componenti. */
+:root {
+  --sfondo: #0d1021;
+  --superficie: #181c35;
+  --superficie-2: #232849;
+  --bordo: #343a66;
+  --testo: #f2f3fa;
+  --testo-tenue: #a3a8c8;
+  --accento: #ffd23f;          /* marchio La Scossa (segnaposto) */
+
+  /* regola giallo -> verde / rosso (RC-06) */
+  --selezione: #ffc400;
+  --selezione-testo: #1b1600;
+  --giusta: #1fbf5b;
+  --sbagliata: #e5383b;
+  --soluzione: #1fbf5b;
+
+  --raggio: 12px;
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #app { margin: 0; height: 100%; }
+body { background: var(--sfondo); color: var(--testo); font-family: var(--font); }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--superficie-2);
+  border: 2px solid var(--bordo);
+  border-radius: var(--raggio);
+  padding: 0.7em 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+button:hover:not(:disabled) { border-color: var(--accento); }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+button.primario { background: var(--accento); color: #1b1600; border-color: var(--accento); }
+button.attivo { border-color: var(--accento); box-shadow: inset 0 0 0 2px var(--accento); }
+button.pericolo { border-color: var(--sbagliata); }
+
+input, textarea {
+  font: inherit;
+  color: var(--testo);
+  background: var(--sfondo);
+  border: 2px solid var(--bordo);
+  border-radius: var(--raggio);
+  padding: 0.6em 0.8em;
+}
+
+/* Stati delle opzioni, uguali su plancia e pubblico */
+.opzione.selezionata { background: var(--selezione); color: var(--selezione-testo); border-color: var(--selezione); }
+.opzione.giusta { background: var(--giusta); border-color: var(--giusta); }
+.opzione.sbagliata { background: var(--sbagliata); border-color: var(--sbagliata); }
+.opzione.soluzione { border: 4px dashed var(--soluzione); }
+
+/* ================================================================ plancia */
+
+.plancia {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 100%;
+  font-size: 18px;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 1rem;
+  background: var(--superficie);
+  border-bottom: 2px solid var(--bordo);
+}
+.barra .marchio { font-weight: 800; color: var(--accento); letter-spacing: 0.04em; }
+.barra .stato { color: var(--testo-tenue); }
+.barra .spazio { flex: 1; }
+
+.connessione { display: inline-flex; align-items: center; gap: 0.4em; font-size: 0.9em; }
+.connessione::before { content: ""; width: 0.7em; height: 0.7em; border-radius: 50%; background: var(--sbagliata); }
+.connessione.connesso::before { background: var(--giusta); }
+.connessione.disconnesso { color: var(--sbagliata); font-weight: 700; }
+
+.messaggi { display: grid; gap: 0.3rem; padding: 0 1rem; }
+.messaggi > div { margin-top: 0.5rem; padding: 0.6rem 1rem; border-radius: var(--raggio); }
+.messaggio-rifiuto { background: #4a1416; border: 2px solid var(--sbagliata); }
+.messaggio-pausa { background: #3d3410; border: 2px solid var(--selezione); font-weight: 700; text-align: center; }
+.messaggio-blackout { background: #000; border: 2px solid var(--testo-tenue); text-align: center; }
+
+.contenuto { display: grid; grid-template-columns: 1fr 340px; gap: 1rem; padding: 1rem; align-items: start; }
+.pannello { background: var(--superficie); border: 2px solid var(--bordo); border-radius: var(--raggio); padding: 1rem 1.2rem; }
+.pannello h2 { margin: 0 0 0.8rem; font-size: 1.1em; color: var(--testo-tenue); text-transform: uppercase; letter-spacing: 0.06em; }
+.pannello h3 { margin: 1rem 0 0.5rem; font-size: 0.95em; color: var(--testo-tenue); }
+.azioni { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.tenue { color: var(--testo-tenue); }
+.griglia-modalita { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; }
+.griglia-modalita button { min-height: 5.5em; display: flex; flex-direction: column; justify-content: center; gap: 0.2em; }
+.griglia-modalita small { font-weight: 400; color: var(--testo-tenue); }
+.lista-avvisi { margin: 0.5rem 0 0; padding-left: 1.2em; color: var(--selezione); font-size: 0.9em; }
+
+.estas { display: grid; grid-template-columns: 280px 1fr; gap: 1rem; }
+.categorie { display: grid; gap: 0.5rem; }
+.categorie button { text-align: left; display: flex; justify-content: space-between; gap: 0.5em; }
+.oggetto { font-size: 2.6em; font-weight: 800; margin: 0.2em 0; }
+.soluzione-plancia { display: inline-block; padding: 0.3em 0.8em; border-radius: 999px; font-weight: 700; background: var(--superficie-2); border: 2px solid var(--giusta); }
+.opzioni-plancia { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1rem 0; }
+.opzioni-plancia button { font-size: 1.5em; padding: 1em; position: relative; }
+.opzioni-plancia .corretta-segno { position: absolute; top: 0.3em; right: 0.5em; font-size: 0.55em; font-weight: 700; color: var(--giusta); }
+.opzioni-plancia .opzione.giusta .corretta-segno { color: #fff; }
+.gruppi { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.gruppi > div { background: var(--superficie-2); border-radius: var(--raggio); padding: 0.7rem 0.9rem; }
+.turno { font-size: 1.1em; }
+
+.riquadro-plancia textarea { width: 100%; min-height: 5em; resize: vertical; }
+.riquadro-plancia .anteprima { margin-top: 0.5rem; font-size: 0.85em; }
+
+.piede { display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0.6rem 1rem; font-size: 0.85em; color: var(--testo-tenue); border-top: 2px solid var(--bordo); }
+.piede a { color: var(--accento); }
+
+.pin { max-width: 360px; margin: 15vh auto; display: grid; gap: 0.8rem; }
+
+/* ================================================================ pubblico */
+/* Palco 16:9 centrato; le misure in cqw scalano con il palco, qualunque sia la risoluzione. */
+
+.pubblico { position: fixed; inset: 0; background: #000; display: grid; place-items: center; overflow: hidden; cursor: none; }
+.palco {
+  container-type: size;
+  position: relative;
+  width: min(100vw, calc(100vh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  background: radial-gradient(ellipse at 50% 30%, #262c5c 0%, var(--sfondo) 70%);
+  display: grid;
+  grid-template-rows: 18cqh 1fr 30cqh;
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+}
+.palco.nero { background: #000; }
+.logo { font-size: 11cqw; font-weight: 900; color: var(--accento); letter-spacing: 0.04em; text-shadow: 0 0 4cqw rgba(255, 210, 63, 0.35); grid-row: 1 / -1; }
+.palco.nero .logo { font-size: 4cqw; opacity: 0.25; }
+.categoria-pubblico { font-size: 3.6cqw; font-weight: 700; color: var(--accento); text-transform: uppercase; letter-spacing: 0.05em; }
+.oggetto-pubblico { font-size: 7.5cqw; font-weight: 900; line-height: 1.1; padding: 0 4cqw; }
+.opzioni-pubblico { display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; width: 80%; }
+.opzioni-pubblico .opzione {
+  font-size: 4.5cqw;
+  font-weight: 800;
+  padding: 2.5cqw 1cqw;
+  border-radius: 2cqw;
+  border: 0.5cqw solid var(--bordo);
+  background: var(--superficie-2);
+  transition: background 0.25s, border-color 0.25s;
+}
+.opzioni-pubblico .opzione.soluzione { border: 0.6cqw dashed var(--soluzione); }
+.riquadro-pubblico {
+  position: absolute;
+  right: 3cqw;
+  bottom: 3cqw;
+  max-width: 45cqw;
+  padding: 1.5cqw 2.5cqw;
+  font-size: 2.4cqw;
+  font-weight: 700;
+  white-space: pre-line;
+  text-align: left;
+  background: rgba(13, 16, 33, 0.92);
+  border: 0.3cqw solid var(--accento);
+  border-radius: 1.5cqw;
+}
+
+/* ================================================================ debug */
+
+.debug { padding: 1rem; display: grid; gap: 1rem; font-size: 14px; }
+.debug table { width: 100%; border-collapse: collapse; }
+.debug th, .debug td { text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--bordo); }
+.debug th { color: var(--testo-tenue); font-weight: 600; }
+.debug pre { white-space: pre-wrap; font-size: 12px; max-height: 50vh; overflow: auto; }
+.debug .colonne { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }

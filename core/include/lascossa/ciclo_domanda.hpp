@@ -25,6 +25,7 @@ public:
     Stato stato() const { return stato_; }
     int selezionata() const { return selezionata_; }
     int corretta() const { return corretta_; }
+    int num_opzioni() const { return static_cast<int>(bruciate_.size()); }
     bool bruciata(int i) const { return valida(i) && bruciate_[static_cast<std::size_t>(i)]; }
     bool conclusa() const {
         return stato_ == Stato::Giusta || stato_ == Stato::Rivelata || (stato_ == Stato::Sbagliata && !riprova_);

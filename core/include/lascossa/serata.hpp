@@ -28,9 +28,17 @@ public:
     enum class Stato { Lobby, SceltaModalita, InGioco, Chiusa };
 
     Serata(Configurazione cfg, Contenuti contenuti);
+    // Copia profonda (clona la modalità attiva): usata per provare un evento senza applicarlo.
+    Serata(const Serata& altra);
+    Serata& operator=(const Serata&) = delete;
 
     Esito gestisci(const Evento& e, Traccia* t);
 
+    // Una modalità è disponibile quando la sua macchina a stati è implementata.
+    static bool disponibile(IdModalita m);
+
+    const Configurazione& configurazione() const { return cfg_; }
+    const Contenuti& contenuti() const { return contenuti_; }
     Stato stato() const { return stato_; }
     bool in_pausa() const { return pausa_; }
     bool blackout() const { return blackout_; }

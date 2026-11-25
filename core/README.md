@@ -24,6 +24,7 @@ evento senza gestirlo in ogni `switch` blocca la build.
 | `core/include/lascossa/estas.hpp` | Modalità 1, Estas o non Estas |
 | `core/include/lascossa/serata.hpp` | Macchina della serata, contiene la modalità attiva |
 | `core/include/lascossa/partita.hpp` | Punto d'ingresso: registro eventi, annulla, replay |
+| `core/include/lascossa/viste.hpp` | Proiezioni `VistaPlancia` / `VistaPubblico` ed eventi ammessi |
 
 ## Macchine
 
@@ -44,6 +45,23 @@ Cambio categoria possibile a ogni oggetto, solo a esito dato; una categoria ripr
 **Partita**: applica gli eventi alla serata, scrive nel registro solo quelli accettati, tiene i rifiutati per il debug.
 `Annulla` ricostruisce lo stato rigiocando il registro senza l'ultimo evento (10.000 eventi: sotto 1 ms in Release).
 
+## Viste
+
+Il server non invia lo stato interno, ma due proiezioni calcolate da `viste.hpp`:
+
+- **`VistaPubblico`**: categoria, oggetto, stato grafico delle opzioni (`neutra`, `selezionata`, `giusta`,
+  `sbagliata`, `soluzione`), blackout, riquadro. Le sue struct non hanno campi per la soluzione: la
+  soluzione arriva al pubblico solo come stato di un'opzione già giudicata o rivelata.
+- **`VistaPlancia`**: tutto, comprese soluzione, categorie con oggetti giocati, turno, modalità
+  disponibili, ultimi eventi, rifiutati e transizioni per il debug.
+- **`eventi_ammessi()`**: prova ogni evento (con gli argomenti possibili) su una **copia** della
+  serata (`Serata(const Serata&)` clona la modalità con `Modalita::clona()`). La plancia abilita
+  solo i pulsanti di questi eventi, senza logica di gioco nel browser.
+
+`Serata::disponibile(IdModalita)` dice quali modalità hanno una macchina implementata;
+`tipo_da_nome("SELEZIONA")` converte i nomi del protocollo; `kTuttiGliEventi` e `kTutteLeModalita`
+elencano tutti i valori degli enum (un test verifica che siano completi).
+
 ## Ipotesi da confermare
 
 - Estas: dopo una risposta sbagliata il turno passa al concorrente successivo; dopo una giusta resta.
@@ -52,4 +70,5 @@ Cambio categoria possibile a ogni oggetto, solo a esito dato; una categoria ripr
 
 ## Prossimi passi
 
-Proiezioni plancia/pubblico, servizio timer, caricamento CSV, server Crow + WebSocket, altre modalità.
+Servizio timer (dopo l'analisi di RC-05), altre modalità (vedi lo skill `.claude/skills/nuova-modalita`),
+schema JSON con generatore dei tipi C++ e TypeScript.

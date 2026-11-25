@@ -43,4 +43,13 @@ std::string_view nome(IdModalita m) {
     return "?";
 }
 
+std::optional<TipoEvento> tipo_da_nome(std::string_view n) {
+    for (TipoEvento t : kTuttiGliEventi) {
+        if (nome(t) == n) {
+            return t;
+        }
+    }
+    return std::nullopt;
+}
+
 }  // namespace lascossa

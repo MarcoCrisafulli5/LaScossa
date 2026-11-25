@@ -1,0 +1,9 @@
+{
+  "concorrenti": { "numero": 6 },
+  "plancia": { "pin": null },
+  "esa": { "tempoLetturaIndizioSec": 3, "timerRispostaSec": 30 },
+  "centos": { "turnoSec": 5 },
+  "ghigliottina": { "timerSec": 120 },
+  "duelli": { "timerSec": 60, "lettereAutomatiche": true },
+  "selezione": { "escluse": ["esa", "centos", "duelli"] }
+}

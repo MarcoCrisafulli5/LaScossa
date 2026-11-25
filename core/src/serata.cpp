@@ -15,6 +15,31 @@ Esito non_ammesso(TipoEvento ev, Serata::Stato s) {
 
 Serata::Serata(Configurazione cfg, Contenuti contenuti) : cfg_(cfg), contenuti_(std::move(contenuti)) {}
 
+Serata::Serata(const Serata& altra)
+    : cfg_(altra.cfg_),
+      contenuti_(altra.contenuti_),
+      stato_(altra.stato_),
+      pausa_(altra.pausa_),
+      blackout_(altra.blackout_),
+      riquadro_visibile_(altra.riquadro_visibile_),
+      riquadro_testo_(altra.riquadro_testo_),
+      modalita_(altra.modalita_ ? altra.modalita_->clona() : nullptr),
+      giocate_(altra.giocate_) {}
+
+bool Serata::disponibile(IdModalita m) {
+    switch (m) {
+        case IdModalita::Estas: return true;
+        case IdModalita::Esa:
+        case IdModalita::Date:
+        case IdModalita::LaScossa:
+        case IdModalita::Triello:
+        case IdModalita::Centos:
+        case IdModalita::Ghigliottina:
+        case IdModalita::Duelli: return false;  // non ancora implementate
+    }
+    return false;
+}
+
 std::string_view Serata::nome(Stato s) {
     switch (s) {
         case Stato::Lobby: return "Lobby";
@@ -142,7 +167,11 @@ Esito Serata::su_scelta_modalita(const Evento& e, Traccia* t) {
         case TipoEvento::ScegliModalita: {
             auto m = crea_modalita(e.arg);
             if (!m) {
-                return Esito::rifiuto("modalità " + std::to_string(e.arg) + " non disponibile");
+                if (e.arg < 0 || e.arg >= static_cast<int>(kTutteLeModalita.size())) {
+                    return Esito::rifiuto("modalità " + std::to_string(e.arg) + " inesistente");
+                }
+                return Esito::rifiuto("modalità " + std::string(lascossa::nome(static_cast<IdModalita>(e.arg))) +
+                                      " non ancora disponibile");
             }
             giocate_.push_back(m->id());
             modalita_ = std::move(m);

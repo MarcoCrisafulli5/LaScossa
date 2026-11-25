@@ -169,6 +169,17 @@ Le prime quattro decidono l'architettura; le altre si possono chiudere mentre si
 8. Che computer, sistema operativo e browser usate in sala? C'è internet? macbook m4 probabilmente come computer, c'e' wifi
 9. I punti aperti per modalità nella colonna "Da chiarire" della sezione 5.
 
+### 8.1 Requisiti da formalizzare
+
+Requisiti emersi durante lo sviluppo: vanno analizzati e trasformati in requisiti con un ID prima di implementarli.
+
+| Annotato | Requisito | Stato |
+| --- | --- | --- |
+| 24/11 | **Duello in qualsiasi momento.** Il duello può avvenire in qualsiasi momento della serata, non solo come modalità scelta in scaletta. Si svolge in una schermata pubblico separata e ha una plancia di controllo dedicata. | Da analizzare |
+| 24/11 | **Duelli senza ripetizioni.** Bisogna tenere traccia di parole e definizioni già uscite nei duelli, per non riproporle (estende RC-13 ai duelli). | Da analizzare |
+
+Punti da analizzare: se il duello sospende la modalità in corso o gira in parallelo; cosa mostra intanto lo schermo pubblico principale; come si aprono la schermata e la plancia del duello; come funzionano registro e annulla con due giochi aperti; se le parole usate valgono per la serata o anche tra serate diverse.
+
 ## 9. Fasi di rilascio proposte
 
 Si parte dalla base comune e da una modalità sola, per verificare in sala che plancia e proiettore funzionano prima di costruire il resto.
