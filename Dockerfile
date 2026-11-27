@@ -1,7 +1,7 @@
 # Immagine di La Scossa: un binario C++ e la build statica di React.
 #   docker compose up        poi http://localhost:8080/plancia e /pubblico
 # Multi-architettura (Mac M4 = linux/arm64, PC = linux/amd64):
-#   docker buildx build --platform linux/arm64,linux/amd64 -t lascossa .
+#   docker buildx build --platform linux/arm64,linux/amd64 -t lascossa:$(cat VERSION) .
 
 # --- stadio 1: interfaccia React (Node serve solo qui) ---
 # Node 24 porta npm 11, lo stesso che genera web/package-lock.json: con npm 10 "npm ci"
@@ -19,7 +19,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends g++ cmake ninja-build \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
-COPY CMakeLists.txt ./
+COPY CMakeLists.txt VERSION ./
 COPY third_party third_party
 COPY core core
 COPY server server

@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::cout << "La Scossa - server\n"
+    std::cout << "La Scossa - server " << LASCOSSA_VERSIONE << "\n"
               << "  dati:     " << fs::absolute(opzioni->dati).generic_string() << "\n"
               << "  registro: " << regia->file_registro().generic_string() << "\n";
     for (const auto& a : regia->avvisi()) std::cout << "  avviso:   " << a << "\n";

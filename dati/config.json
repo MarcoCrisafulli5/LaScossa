@@ -1,6 +1,7 @@
 {
   "concorrenti": { "numero": 6 },
   "plancia": { "pin": null },
+  "estas": { "attesaEsitoMs": 2000 },
   "esa": { "tempoLetturaIndizioSec": 3, "timerRispostaSec": 30 },
   "centos": { "turnoSec": 5 },
   "ghigliottina": { "timerSec": 120 },

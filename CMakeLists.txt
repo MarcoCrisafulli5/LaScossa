@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
-project(lascossa LANGUAGES CXX)
+# Versione unica del progetto nel file VERSION (storia delle modifiche in CHANGELOG.md).
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" LASCOSSA_VERSIONE LIMIT_COUNT 1)
+string(STRIP "${LASCOSSA_VERSIONE}" LASCOSSA_VERSIONE)  # su Windows il checkout può aggiungere \r
+project(lascossa VERSION ${LASCOSSA_VERSIONE} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -54,7 +57,7 @@ if(LASCOSSA_SERVER)
     # --- eseguibile: Crow (HTTP + WebSocket) su Asio standalone ---
     add_executable(lascossa-server server/src/main.cpp)
     target_include_directories(lascossa-server SYSTEM PRIVATE third_party/crow/include third_party/asio/include)
-    target_compile_definitions(lascossa-server PRIVATE ASIO_STANDALONE)
+    target_compile_definitions(lascossa-server PRIVATE ASIO_STANDALONE LASCOSSA_VERSIONE="${PROJECT_VERSION}")
     target_link_libraries(lascossa-server PRIVATE lascossa_regia Threads::Threads)
     if(WIN32)
         target_compile_definitions(lascossa-server PRIVATE _WIN32_WINNT=0x0A00)

@@ -23,6 +23,11 @@ poi conferma: la macchina confronta con la soluzione e la colora verde o rosso. 
 risposta aperta (ESA, Centos, Duelli) usano `CONFERMA_GIUSTA` / `CONFERMA_SBAGLIATA`: giudica il conduttore.
 Colori in `web/src/stile.css` (variabili CSS), non nel codice dei componenti.
 
+**Suspense (27/11)**: dopo la conferma il pubblico tiene il giallo per `<modalità>.attesaEsitoMs`
+(config, default 2000) e poi colora; la plancia spegne "prossimo" e il cambio categoria per lo stesso
+tempo. È solo frontend (`web/src/attesaEsito.ts`): il server registra l'esito subito e manda la
+durata nella vista. Ogni modalità a scelta nuova ha il suo parametro e usa lo stesso hook.
+
 ## Modalità implementate
 
 - **1. Estas o non Estas**: categoria → oggetti; opzione 0 = Estas, 1 = Non Estas. Prima di ogni
@@ -36,16 +41,29 @@ Colori in `web/src/stile.css` (variabili CSS), non nel codice dei componenti.
 ## Ipotesi da confermare con l'utente (non trasformarle in certezze)
 
 - Estas: dopo una risposta sbagliata il turno passa al concorrente successivo; dopo una giusta resta.
-- Timer (RC-05): due tipi (effimeri solo frontend; legati a domande/eventi). Analisi del problema
-  ancora da fare: non implementare timer senza chiedere.
 - Le domande aperte di ogni modalità sono nella colonna "Da chiarire" della sezione 5 dei requisiti.
 
-## Requisiti da formalizzare (sezione 8.1 dei requisiti)
+## Timer (RC-05, deciso il 27/11)
 
-- **Duelli (24/11)**: il duello può avvenire in qualsiasi momento della serata, su una schermata
-  pubblico separata con una plancia dedicata, e deve tenere traccia delle parole già uscite per non
-  riproporle. Contraddice il modello attuale ("una modalità attiva alla volta" dentro la Serata):
-  **non implementare i Duelli come le altre modalità** finché il problema non è analizzato con l'utente.
+- **Timer di gioco**: nel server (servizio della Regia), la scadenza è un evento registrato con
+  `t_ms`; i browser disegnano solo il conto alla rovescia. Si fermano con la Pausa generale.
+- **Timer liberi**: creati dalla plancia, passano dal server solo per arrivare al pubblico, nessuna
+  macchina li legge. Aperto: se sopravvivono a un crash e se la Pausa generale li ferma.
+
+## Duelli (RC-15 … RC-20, analizzati il 27/11; sezione 5.1 dei requisiti, sezione "Duelli" dell'architettura)
+
+- **Non è la modalità 8 dentro la Serata**: è una seconda partita nella Regia, con registro
+  (`partite/<data>-duelli.jsonl`), Annulla e plancia propri. Durante il duello la serata è in pausa.
+- Un solo `/pubblico`: un comando "in onda" (evento della serata) sceglie la vista serata o duello.
+- Storico parole in `dati/duelli/usate.csv`, valido tra serate; parola andata in onda = bruciata
+  anche se annullata. La parola la sceglie a caso la Regia e la scrive nell'evento.
+- Due orologi a scacchi: a ogni risposta, giusta o sbagliata, si ferma l'orologio di chi ha
+  risposto e parte quello dell'altro. Lettere automatiche ogni N secondi (eventi del servizio timer con origine
+  "automatico"), l'ultima solo a conferma. Annulla toglie l'ultimo evento del conduttore e gli
+  automatici successivi, e lascia gli orologi in pausa.
+- Le regole di gioco del duello sono rimandate (27/11): i punti "Da chiarire" della sezione 5.1
+  restano aperti. Si può predisporre l'architettura (Regia con due partite, ruolo `plancia-duello`,
+  "in onda", origine degli eventi), non la macchina a stati del duello.
 
 ## Decisioni già prese (24/11/2026)
 

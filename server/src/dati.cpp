@@ -14,6 +14,7 @@ namespace {
 
 constexpr std::size_t kMinimoOggettiPerCategoria = 11;  // regole: "più di 10 oggetti per categoria"
 constexpr int kMassimoConcorrenti = 20;
+constexpr int kMassimaAttesaEsitoMs = 10000;  // oltre 10 s la suspense blocca la plancia troppo a lungo
 
 std::string minuscolo(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -55,6 +56,14 @@ void leggi_config(std::string_view testo, Configurazione& cfg, Impostazioni& imp
             throw ErroreDati("config.json: concorrenti.numero deve essere tra 1 e " + std::to_string(kMassimoConcorrenti));
         }
         cfg.numero_concorrenti = n;
+    }
+    if (j.contains("estas") && j["estas"].contains("attesaEsitoMs")) {
+        const auto& a = j["estas"]["attesaEsitoMs"];
+        if (!a.is_number_integer() || a.get<int>() < 0 || a.get<int>() > kMassimaAttesaEsitoMs) {
+            throw ErroreDati("config.json: estas.attesaEsitoMs deve essere un intero tra 0 e " +
+                             std::to_string(kMassimaAttesaEsitoMs));
+        }
+        cfg.estas.attesa_esito_ms = a.get<int>();
     }
     if (j.contains("plancia") && j["plancia"].contains("pin")) {
         const auto& pin = j["plancia"]["pin"];

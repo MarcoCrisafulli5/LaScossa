@@ -51,6 +51,7 @@ export interface EstasPubblico {
   categoria: string;
   oggetto: string;
   opzioni: { etichetta: string; stato: StatoOpzione }[];
+  attesaEsitoMs: number; // config: per quanto un'opzione appena giudicata resta gialla
 }
 
 export interface VistaPubblico {
@@ -80,6 +81,7 @@ export interface EstasPlancia {
   opzioni: { etichetta: string; stato: StatoOpzione; corretta: boolean }[];
   concorrenteDiTurno: number;
   numeroConcorrenti: number;
+  attesaEsitoMs: number; // config: per quanto la plancia blocca "prossimo" dopo un giudizio
 }
 
 export interface EventoRegistrato {

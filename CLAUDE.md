@@ -30,7 +30,8 @@ Regole dettagliate in `.claude/rules/` (architettura e dominio sempre; C++, web 
 - Fatto: core FSM (serata, ciclo domanda, Estas, partita con registro/annulla/replay), proiezioni
   plancia/pubblico ed eventi ammessi, server Crow + WebSocket, CSV/config, registro `.jsonl` con
   ripresa dopo crash, plancia/pubblico/debug in React, Dockerfile.
-- Da fare: modalità 2–8, servizio timer (RC-05, va prima analizzato), generatore dei tipi dallo
+- Da fare: modalità 2–7, duelli come seconda partita (RC-15…20, punti aperti in sezione 5.1 dei
+  requisiti), servizio timer (RC-05, analizzato il 27/11), generatore dei tipi dallo
   schema JSON, `RICARICA_CONTENUTI` a caldo, scorciatoie da tastiera, suoni, grafica definitiva.
 
 ## Comandi
@@ -67,6 +68,7 @@ server/test/ test doctest della regia e dei dati; e2e.mjs
 web/src/     protocollo.ts (tipi dei messaggi), connessione.ts, plancia/, pubblico/, debug/
 dati/        config.json, contenuti/*.csv, partite/ (registri, ignorati da git)
 third_party/ doctest, Crow, Asio standalone, nlohmann/json (header-only, versionati)
+VERSION      versione corrente (SemVer); CHANGELOG.md la storia delle modifiche
 ```
 
 ## Come lavorare qui
@@ -77,3 +79,9 @@ third_party/ doctest, Crow, Asio standalone, nlohmann/json (header-only, version
 - Una modifica al protocollo tocca sempre **tre** posti: `core/include/lascossa/viste.hpp`,
   `server/src/json_viste.cpp`, `web/src/protocollo.ts`.
 - Non introdurre librerie nuove senza chiedere: il minimo di dipendenze è una decisione del 24/11.
+- **Changelog (deciso il 27/11)**: ogni modifica aggiunge una riga in `## [Non rilasciato]` di
+  `CHANGELOG.md`, scritta per chi usa il gioco (cosa cambia in sala), non per chi legge il codice.
+- **Versione**: unica fonte il file `VERSION` (SemVer, partita da 0.1.0); il tag in
+  `docker-compose.yml` va tenuto uguale. Rilascio = aggiornare `VERSION` e il tag, dare numero e
+  data alla sezione "Non rilasciato", e dopo il commit (solo se l'utente lo chiede) `git tag vX.Y.Z`.
+  Una modalità nuova alza la minore (0.2.0); una correzione alza la patch (0.1.1).

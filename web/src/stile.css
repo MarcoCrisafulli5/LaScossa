@@ -156,7 +156,9 @@ input, textarea {
 }
 .oggetto-pubblico { font-size: 7.5cqw; font-weight: 900; line-height: 1.1; padding: 0 4cqw; }
 .opzioni-pubblico { display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; width: 80%; }
-.opzioni-pubblico .opzione {
+/* :where() azzera la specificità di .opzione: così gli stati (.opzione.selezionata/.giusta/.sbagliata,
+   più sopra) vincono su sfondo e bordo. Senza, questa regola veniva dopo e li copriva sul proiettore. */
+.opzioni-pubblico :where(.opzione) {
   font-size: 4.5cqw;
   font-weight: 800;
   padding: 2.5cqw 1cqw;

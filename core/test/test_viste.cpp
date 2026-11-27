@@ -15,6 +15,12 @@ Contenuti contenuti() {
     };
     return c;
 }
+// Configurazione con i default, cambiando solo il numero di concorrenti.
+Configurazione config(int concorrenti) {
+    Configurazione c;
+    c.numero_concorrenti = concorrenti;
+    return c;
+}
 Evento ev(TipoEvento t, int arg = -1) { return {t, arg}; }
 const int kEstas = static_cast<int>(IdModalita::Estas);
 
@@ -23,7 +29,9 @@ bool ammesso(const std::vector<EventoAmmesso>& a, TipoEvento t, int arg = -1) {
 }
 
 Partita in_gioco_estas() {
-    Partita p({3}, contenuti());
+    Configurazione cfg = config(3);
+    cfg.estas.attesa_esito_ms = 1500;
+    Partita p(cfg, contenuti());
     REQUIRE(p.applica(ev(TipoEvento::AvviaSerata)));
     REQUIRE(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     return p;
@@ -55,7 +63,7 @@ TEST_CASE("la copia della serata è profonda: provare un evento non tocca l'orig
 }
 
 TEST_CASE("eventi ammessi seguono lo stato e non modificano la partita") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     auto a = eventi_ammessi(p);
     CHECK(ammesso(a, TipoEvento::AvviaSerata));
     CHECK_FALSE(ammesso(a, TipoEvento::ScegliModalita, kEstas));
@@ -104,7 +112,7 @@ TEST_CASE("eventi ammessi seguono lo stato e non modificano la partita") {
 }
 
 TEST_CASE("pubblico: schermata di attesa fuori dal gioco") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     VistaPubblico v = vista_pubblico(p);
     CHECK_FALSE(v.modalita.has_value());
     CHECK_FALSE(v.estas.has_value());
@@ -205,6 +213,9 @@ TEST_CASE("plancia: soluzione, categorie, turno e debug") {
     CHECK(v.estas->categorie[0].giocati == 1);
     CHECK(v.estas->categorie[0].totale == 2);
     CHECK(v.estas->numero_concorrenti == 3);
+    CHECK(v.estas->attesa_esito_ms == 1500);  // dalla configurazione, uguale per plancia e pubblico
+    REQUIRE(vista_pubblico(p).estas.has_value());
+    CHECK(vista_pubblico(p).estas->attesa_esito_ms == 1500);
 
     CHECK(v.lunghezza_registro == 4);
     REQUIRE(v.ultimi_eventi.size() == 4);

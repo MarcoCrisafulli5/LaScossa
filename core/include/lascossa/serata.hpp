@@ -14,8 +14,16 @@
 
 namespace lascossa {
 
+// Parametri della modalità 1. Le altre modalità avranno la loro struct.
+struct ConfigEstas {
+    // RC-06: dopo la conferma il pubblico tiene la selezione gialla per questo tempo, poi mostra
+    // verde o rosso. Solo presentazione: la macchina a stati non lo usa, viaggia nelle viste.
+    int attesa_esito_ms = 2000;
+};
+
 struct Configurazione {
     int numero_concorrenti = 4;
+    ConfigEstas estas;
 };
 
 struct Contenuti {

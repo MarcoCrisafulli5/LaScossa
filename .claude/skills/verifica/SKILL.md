@@ -57,3 +57,5 @@ completo e con il controllo che il pubblico non riceva la soluzione.
 - Protocollo cambiato? `viste.hpp`, `json_viste.cpp` e `protocollo.ts` allineati.
 - Nuovi `.cpp` in `CMakeLists.txt`.
 - Documentazione: `core/README.md`, "Stato" in `CLAUDE.md`, `README.md` se è cambiato cosa funziona.
+- `CHANGELOG.md`: la modifica ha la sua riga in "Non rilasciato". Se è un rilascio, `VERSION` e il
+  tag in `docker-compose.yml` coincidono.

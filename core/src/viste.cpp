@@ -168,6 +168,7 @@ VistaPubblico vista_pubblico(const Partita& p) {
         v.modalita = s.modalita()->id();
         if (const Estas* e = come_estas(s.modalita())) {
             v.estas = estas_pubblico(*e);
+            v.estas->attesa_esito_ms = s.configurazione().estas.attesa_esito_ms;
         }
     }
     return v;
@@ -195,6 +196,7 @@ VistaPlancia vista_plancia(const Partita& p, std::size_t quanti_debug) {
         v.stato_modalita = std::string(s.modalita()->nome_stato());
         if (const Estas* e = come_estas(s.modalita())) {
             v.estas = estas_plancia(*e);
+            v.estas->attesa_esito_ms = s.configurazione().estas.attesa_esito_ms;
         }
     }
     v.ammessi = eventi_ammessi(p);

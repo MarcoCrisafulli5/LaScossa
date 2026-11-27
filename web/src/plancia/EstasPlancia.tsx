@@ -1,10 +1,19 @@
 // Modalità 1 in plancia: categorie, oggetto con soluzione, risposta del concorrente,
 // pulsanti "segna" (conferma) separati da quelli "mostra" (rivela, prossimo oggetto).
 
+import { useAttesaEsito } from "../attesaEsito";
 import { ammesso, type EstasPlancia as Estas, type VistaPlancia } from "../protocollo";
 import type { Invia } from "./Plancia";
 
 export function EstasPlancia({ v, e, invia }: { v: VistaPlancia; e: Estas; invia: Invia }) {
+  // Mentre il pubblico tiene la suspense (giallo prima di verde/rosso) non si passa oltre:
+  // "prossimo oggetto" e il cambio categoria restano spenti. La plancia vede subito l'esito vero.
+  const inAttesa =
+    useAttesaEsito(
+      `${e.categoriaCorrente}|${e.oggetto ?? ""}`,
+      e.opzioni.map((o) => o.stato),
+      e.attesaEsitoMs,
+    ) !== null;
   return (
     <div className="estas">
       <div>
@@ -14,7 +23,7 @@ export function EstasPlancia({ v, e, invia }: { v: VistaPlancia; e: Estas; invia
             <button
               key={c.nome}
               className={i === e.categoriaCorrente ? "attivo" : undefined}
-              disabled={!ammesso(v, "SCEGLI_CATEGORIA", i)}
+              disabled={inAttesa || !ammesso(v, "SCEGLI_CATEGORIA", i)}
               onClick={() => invia("SCEGLI_CATEGORIA", i)}
             >
               <span>{c.nome}</span>
@@ -104,10 +113,14 @@ export function EstasPlancia({ v, e, invia }: { v: VistaPlancia; e: Estas; invia
                   <button disabled={!ammesso(v, "RIVELA")} onClick={() => invia("RIVELA")}>
                     Rivela soluzione
                   </button>
-                  <button disabled={!ammesso(v, "PROSSIMA_DOMANDA")} onClick={() => invia("PROSSIMA_DOMANDA")}>
+                  <button
+                    disabled={inAttesa || !ammesso(v, "PROSSIMA_DOMANDA")}
+                    onClick={() => invia("PROSSIMA_DOMANDA")}
+                  >
                     Prossimo oggetto (prima la categoria)
                   </button>
                 </div>
+                {inAttesa && <p className="tenue">Il pubblico sta per vedere l'esito…</p>}
               </div>
             </div>
           </>

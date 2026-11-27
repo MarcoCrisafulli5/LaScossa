@@ -129,6 +129,39 @@ Pratiche consolidate nel mondo embedded, applicate al motore (non ricavate dalla
 
 Un servizio timer nel server, fuori dalla macchina a stati. Ogni timer ha id, etichetta, durata e stato (`fermo`, `in corso`, `in pausa`). Nello stato si salva l'istante di scadenza e il tempo residuo; i browser disegnano il conto alla rovescia localmente. Alla scadenza il servizio invia `TIMER_SCADUTO` al motore come qualsiasi altro evento.
 
+I timer sono di due tipi (deciso il 27/11, RC-05). I **timer di gioco** sono quelli appena descritti: vivono nel server, la loro scadenza è un evento registrato e si fermano con la Pausa generale. I **timer liberi** li crea la plancia per momenti che la regia non controlla: passano dal server solo per arrivare al pubblico, nessuna macchina li legge e non generano eventi di gioco. Da decidere se sopravvivono a un crash e se la Pausa generale li ferma.
+
+## Duelli
+
+Il duello è una seconda partita nello stesso server, accanto alla serata (deciso il 27/11, requisiti RC-15 … RC-20). La Regia ne gestisce due, ognuna con la sua macchina, il suo registro e il suo Annulla. Mentre il duello è in corso la serata resta in pausa.
+
+### Approcci valutati
+
+| Punto | Scelta | Alternative scartate |
+| --- | --- | --- |
+| Dove vive il duello | Due partite indipendenti nella Regia, serata e duelli, ognuna con il suo `.jsonl`. La `Serata` e il suo motore restano come sono | Modalità 8 che sospende la serata: un solo registro, ma l'Annulla di una plancia toglierebbe i clic dell'altra e lo storico vivrebbe in una sola sera. Seconda macchina dentro la stessa partita: Annulla per contesto da riscrivere, `Partita` più complessa |
+| Proiettore | Un solo `/pubblico`; un comando "in onda" sceglie se mandare la vista della serata o quella del duello | Indirizzo separato a schermo intero: cambiare finestra in diretta rischia di proiettare la plancia |
+| Storico delle parole | File `dati/duelli/usate.csv`, letto all'avvio e fissato nel registro all'apertura del duello, aggiornato quando una parola va in onda | Ricavato dal registro della serata: vale una sola sera. Ricavato da tutti i registri: cancellare `partite/` azzera lo storico senza volerlo |
+| Lettere | Automatiche ogni N secondi, inserite dal servizio timer come eventi; l'ultima solo a conferma della plancia | Solo a comando: troppo lavoro per il conduttore in un duello veloce |
+
+Con la serata in pausa anche la modalità 8 funzionerebbe; le due partite restano preferite per l'Annulla separato e lo storico tra serate.
+
+### Come funziona
+
+- **Avvio:** dalla plancia del duello, con i due concorrenti scelti da `concorrenti.csv` (nome e foto). La Regia mette in pausa la serata e apre il duello in `partite/<data>-duelli.jsonl`. A duello finito la serata riprende dal punto esatto.
+- **In onda:** è un evento della serata, come il blackout, così sopravvive a un crash. Il pubblico riceve una vista che è o la serata o il duello.
+- **Protocollo:** un ruolo nuovo `plancia-duello`; gli eventi dei due giochi passano dallo stesso mutex, uno alla volta.
+- **Parole:** la Regia sceglie a caso tra quelle non ancora usate e scrive la scelta nell'evento, così il replay è identico. Quando la parola va in onda la aggiunge allo storico, dopo aver scritto il registro; resta bruciata anche se l'evento si annulla.
+- **Vista del pubblico:** nomi e foto, definizione, caselle con le sole lettere scoperte, due orologi. Nessun campo per la parola intera.
+
+### Orologi a scacchi e lettere
+
+- **Stato:** residuo di sinistra, residuo di destra, chi ha la palla, istante in cui è partito il suo orologio (o fermo). Il tempo entra solo da `Evento::t_ms`.
+- **Passaggio di palla:** a ogni risposta, giusta o sbagliata, all'istante t, chi aveva la palla perde t − avvio dal residuo, la palla passa all'altro e il suo orologio parte da t.
+- **Servizio timer:** dopo ogni evento ricalcola dallo stato le prossime scadenze e inserisce `TIMER_SCADUTO {lato}` e `RIVELA_LETTERA` (ogni N secondi di orologio che corre, posizione casuale scritta nell'evento). Prima dell'ultima lettera si ferma e aspetta la conferma della plancia.
+- **Corse:** se un clic e una scadenza arrivano insieme vince il primo entrato nel mutex; il secondo è rifiutato.
+- **Annulla:** ogni evento porta la sua origine (conduttore o automatico). Annulla toglie l'ultimo evento del conduttore e gli eventi automatici venuti dopo; gli orologi tornano al valore di quel momento e restano in pausa. Dopo un crash si riprende allo stesso modo, in pausa.
+
 ## Flusso di un evento
 
 Un clic in plancia diventa un evento; il server lo controlla, lo scrive nel registro e solo dopo aggiorna gli schermi.
@@ -173,10 +206,11 @@ Esempio di `config.json` (valori indicativi):
 {
   "concorrenti": { "numero": 6 },
   "plancia": { "pin": null },
+  "estas": { "attesaEsitoMs": 2000 },
   "esa": { "tempoLetturaIndizioSec": 3, "timerRispostaSec": 30 },
   "centos": { "turnoSec": 5 },
   "ghigliottina": { "timerSec": 120 },
-  "duelli": { "timerSec": 60, "lettereAutomatiche": true },
+  "duelli": { "timerSec": 60, "lettereOgniSec": 5 },
   "selezione": { "escluse": ["esa", "centos", "duelli"] }
 }
 ```

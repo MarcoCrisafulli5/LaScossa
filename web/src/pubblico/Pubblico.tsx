@@ -2,6 +2,7 @@
 // Non riceve mai soluzioni: il server gliele nasconde (VistaPubblico non ha campi per la soluzione).
 
 import { useEffect } from "react";
+import { useAttesaEsito } from "../attesaEsito";
 import { useConnessione } from "../connessione";
 import type { EstasPubblico } from "../protocollo";
 
@@ -36,6 +37,12 @@ export function Pubblico() {
 }
 
 function Estas({ e }: { e: EstasPubblico }) {
+  // Suspense: l'opzione appena confermata resta gialla per attesaEsitoMs, poi verde o rossa.
+  const inAttesa = useAttesaEsito(
+    `${e.categoria}|${e.oggetto}`,
+    e.opzioni.map((o) => o.stato),
+    e.attesaEsitoMs,
+  );
   // Tra un oggetto e l'altro solo la categoria, grande: i conduttori possono spiegare regole e dubbi
   // senza la domanda a schermo.
   if (e.stato === "AttesaOggetto") return <div className="categoria-sola">{e.categoria}</div>;
@@ -46,8 +53,8 @@ function Estas({ e }: { e: EstasPubblico }) {
       <div className="oggetto-pubblico">{e.oggetto}</div>
       {e.opzioni.length > 0 ? (
         <div className="opzioni-pubblico">
-          {e.opzioni.map((o) => (
-            <div key={o.etichetta} className={`opzione ${o.stato}`}>
+          {e.opzioni.map((o, i) => (
+            <div key={o.etichetta} className={`opzione ${i === inAttesa ? "selezionata" : o.stato}`}>
               {o.etichetta}
             </div>
           ))}

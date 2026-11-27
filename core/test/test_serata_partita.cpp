@@ -14,12 +14,18 @@ Contenuti contenuti() {
     c.estas = {{"Piatti tipici regionali", {{"Arancini", true}, {"Sushi", false}}}};
     return c;
 }
+// Configurazione con i default, cambiando solo il numero di concorrenti.
+Configurazione config(int concorrenti) {
+    Configurazione c;
+    c.numero_concorrenti = concorrenti;
+    return c;
+}
 Evento ev(TipoEvento t, int arg = -1) { return {t, arg}; }
 const int kEstas = static_cast<int>(IdModalita::Estas);
 }  // namespace
 
 TEST_CASE("serata: lobby, scelta modalità, gioco, fine modalità, chiusura") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.serata().stato() == S::Lobby);
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
@@ -33,7 +39,7 @@ TEST_CASE("serata: lobby, scelta modalità, gioco, fine modalità, chiusura") {
 }
 
 TEST_CASE("modalità non ancora implementata: rifiuto con motivo") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     const Esito r = p.applica(ev(TipoEvento::ScegliModalita, static_cast<int>(IdModalita::Duelli)));
     CHECK_FALSE(r);
@@ -42,7 +48,7 @@ TEST_CASE("modalità non ancora implementata: rifiuto con motivo") {
 }
 
 TEST_CASE("pausa generale: blocca gli eventi di gioco, non la fine modalità") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::PausaGenerale)));
@@ -53,7 +59,7 @@ TEST_CASE("pausa generale: blocca gli eventi di gioco, non la fine modalità") {
 }
 
 TEST_CASE("annulla: torna allo stato precedente rigiocando il registro") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
@@ -81,12 +87,12 @@ TEST_CASE("annulla: torna allo stato precedente rigiocando il registro") {
 }
 
 TEST_CASE("annulla con registro vuoto è rifiutato") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK_FALSE(p.applica(ev(TipoEvento::Annulla)));
 }
 
 TEST_CASE("la traccia registra ogni transizione con macchina, stati ed evento") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
@@ -115,7 +121,7 @@ TEST_CASE("replay di 10.000 eventi: misura per decidere sulle istantanee") {
         eventi.push_back(ev(TipoEvento::Conferma));
         eventi.push_back(ev(TipoEvento::ProssimaDomanda));
     }
-    Partita p({4}, c);
+    Partita p(config(4), c);
     const auto inizio = std::chrono::steady_clock::now();
     p.rigioca(eventi);
     const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - inizio).count();
@@ -126,7 +132,7 @@ TEST_CASE("replay di 10.000 eventi: misura per decidere sulle istantanee") {
 }
 
 TEST_CASE("riquadro punteggio: aggiorna, mostra, nascondi in ogni stato aperto") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     Evento agg{TipoEvento::AggiornaRiquadro};
     agg.testo = "Anna 1000 - Bruno 500";
     CHECK(p.applica(agg));
@@ -140,7 +146,7 @@ TEST_CASE("riquadro punteggio: aggiorna, mostra, nascondi in ogni stato aperto")
 }
 
 TEST_CASE("ricarica contenuti solo fuori dal gioco") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.applica(ev(TipoEvento::RicaricaContenuti)));
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::RicaricaContenuti)));
@@ -149,7 +155,7 @@ TEST_CASE("ricarica contenuti solo fuori dal gioco") {
 }
 
 TEST_CASE("rivela in Estas passa al ciclo della domanda") {
-    Partita p({3}, contenuti());
+    Partita p(config(3), contenuti());
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::ScegliCategoria, 0)));

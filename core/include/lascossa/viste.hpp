@@ -45,6 +45,7 @@ struct EstasPubblico {
     std::string categoria;  // vuota finché non si sceglie una categoria
     std::string oggetto;    // vuoto se nessun oggetto è in gioco
     std::vector<OpzionePubblico> opzioni;
+    int attesa_esito_ms = 0;  // da config: quanto resta gialla un'opzione appena giudicata
 };
 
 struct VistaPubblico {
@@ -94,6 +95,7 @@ struct EstasPlancia {
     std::vector<OpzionePlancia> opzioni;
     int concorrente_di_turno = 0;  // 0-based; anonimo: la plancia mostra solo il numero
     int numero_concorrenti = 0;
+    int attesa_esito_ms = 0;  // da config: la plancia blocca "prossimo" finché il pubblico non colora
 };
 
 // Riepilogo dei contenuti caricati, mostrato in plancia prima di iniziare.

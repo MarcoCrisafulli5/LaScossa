@@ -38,6 +38,7 @@ json estas(const EstasPlancia& e) {
         {"opzioni", opzioni},
         {"concorrenteDiTurno", e.concorrente_di_turno},
         {"numeroConcorrenti", e.numero_concorrenti},
+        {"attesaEsitoMs", e.attesa_esito_ms},
     };
 }
 
@@ -46,7 +47,11 @@ json estas(const EstasPubblico& e) {
     for (const auto& o : e.opzioni) {
         opzioni.push_back({{"etichetta", o.etichetta}, {"stato", s(nome(o.stato))}});
     }
-    return {{"stato", e.stato}, {"categoria", e.categoria}, {"oggetto", e.oggetto}, {"opzioni", opzioni}};
+    return {{"stato", e.stato},
+            {"categoria", e.categoria},
+            {"oggetto", e.oggetto},
+            {"opzioni", opzioni},
+            {"attesaEsitoMs", e.attesa_esito_ms}};
 }
 
 }  // namespace

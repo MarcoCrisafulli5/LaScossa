@@ -73,6 +73,9 @@ const giusta = plancia.vista.estas.oggettoAppartiene ? 0 : 1;
 const sbagliata = 1 - giusta;
 verifica(typeof oggetto === "string" && pubblico.vista.estas.oggetto === oggetto, `pubblico vede l'oggetto "${oggetto}"`);
 verifica(!JSON.stringify(pubblico.ricevuti).match(/appartiene|corretta/), "pubblico: nessun campo con la soluzione");
+verifica(Number.isInteger(pubblico.vista.estas.attesaEsitoMs) &&
+         pubblico.vista.estas.attesaEsitoMs === plancia.vista.estas.attesaEsitoMs,
+  `attesa dell'esito da config uguale su plancia e pubblico (${pubblico.vista.estas.attesaEsitoMs} ms)`);
 
 await invia(plancia, "SELEZIONA", sbagliata);
 verifica(pubblico.vista.estas.opzioni[sbagliata].stato === "selezionata", "selezione in giallo");

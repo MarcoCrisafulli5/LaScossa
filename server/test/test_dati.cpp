@@ -57,13 +57,20 @@ TEST_CASE("config: valori, PIN e errori") {
     Impostazioni imp;
     leggi_config(R"({"concorrenti":{"numero":6},"plancia":{"pin":"1234"},"esa":{"timerRispostaSec":30}})", cfg, imp);
     CHECK(cfg.numero_concorrenti == 6);
+    CHECK(cfg.estas.attesa_esito_ms == 2000);  // default se manca in config.json
     REQUIRE(imp.pin.has_value());
     CHECK(*imp.pin == "1234");
 
     leggi_config(R"({"plancia":{"pin":null}})", cfg, imp);
     CHECK_FALSE(imp.pin.has_value());
 
+    leggi_config(R"({"estas":{"attesaEsitoMs":0}})", cfg, imp);
+    CHECK(cfg.estas.attesa_esito_ms == 0);  // 0 = esito subito, senza suspense
+
     CHECK_THROWS_AS(leggi_config(R"({"concorrenti":{"numero":0}})", cfg, imp), ErroreDati);
+    CHECK_THROWS_WITH_AS(leggi_config(R"({"estas":{"attesaEsitoMs":-1}})", cfg, imp),
+                         doctest::Contains("estas.attesaEsitoMs"), ErroreDati);
+    CHECK_THROWS_AS(leggi_config(R"({"estas":{"attesaEsitoMs":"2s"}})", cfg, imp), ErroreDati);
     CHECK_THROWS_AS(leggi_config("{non json", cfg, imp), ErroreDati);
 }
 

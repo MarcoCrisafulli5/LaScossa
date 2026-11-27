@@ -80,8 +80,8 @@ Questi requisiti valgono per tutte le modalità e vanno costruiti una volta sola
 | RC-03 | Menu della serata: scegliere la modalità, il round e il set di domande da giocare, in qualsiasi ordine; al termine di ogni modalità si sceglie liberamente la successiva, nessuna scaletta fissa | Must |
 | RC-04 | Anagrafica concorrenti: nomi (e foto per i Duelli), concorrente di turno evidenziato, passaggio al successivo. Numero di concorrenti nel file di configurazione; tutte le modalità funzionano con qualsiasi numero, tranne i Duelli (sempre 2, con foto) | Must |
 | RC-05 | Timer comandati dalla plancia: avvio, pausa, reset, durata configurabile, visibili su entrambe le schede; pulsante unico "Pausa generale" che ferma e riprende tutti i timer attivi insieme (anche i 2 dei Duelli e il passaggio automatico di Centos). Ogni timer ha un'etichetta in plancia (es. "ESA – risposta", "Duello – sx") e si mette in pausa anche da solo. Di norma è attivo un solo timer alla volta; unica eccezione i Duelli, con un timer per giocatore.\
-I timer sono di 2 tipi. Effimeri solo frontend, non fanno nulla, mostrano il tempo e sono controllabili dalla plancia con start, stop, restart. Timer collegati a domande ed eventi in gioco che sono definiti a compile e modificabili a game time. Sui timer c'e' da analizzare bene.ANALISI DEL PROBLEMA NECESSARIA. | Must |
-| RC-06 | Pulsanti di esito: risposta giusta, sbagliata, passa turno, mostra soluzione. Regola standard per tutte le modalità a scelta: il conduttore seleziona in plancia la risposta del concorrente, che sul pubblico si evidenzia in giallo; poi la conferma e diventa verde se giusta, rossa se sbagliata. Ogni modalità può disattivarla (ipotesi: ESA, Centos e Duelli, che hanno risposte aperte) | Must |
+Due tipi di timer (deciso il 27/11). Timer di gioco: gestiti dalla regia nel server, governano eventi della partita (la scadenza è un evento registrato), visibili su plancia e pubblico, pausabili dalla plancia e dalla Pausa generale. Timer liberi: elementi a schermo creati dalla plancia (avvio, pausa, riavvio) che non governano nulla; servono per momenti che la regia non controlla. | Must |
+| RC-06 | Pulsanti di esito: risposta giusta, sbagliata, passa turno, mostra soluzione. Regola standard per tutte le modalità a scelta: il conduttore seleziona in plancia la risposta del concorrente, che sul pubblico si evidenzia in giallo; poi la conferma e diventa verde se giusta, rossa se sbagliata. Ogni modalità può disattivarla (ipotesi: ESA, Centos e Duelli, che hanno risposte aperte). Suspense (deciso il 27/11): dopo la conferma il pubblico tiene la selezione gialla per un'attesa configurabile per modalità (default 2 s), poi mostra verde o rosso; intanto la plancia tiene spento il passaggio all'oggetto successivo. Il ritardo vive solo nel frontend | Must |
 | RC-07 | Annulla ultima azione, per rimediare a un clic sbagliato in diretta | Must |
 | RC-08 | Schermata "di attesa" con logo La Scossa, richiamabile in ogni momento (blackout del pubblico) | Should |
 | RC-09 | Contenuti caricati da file (domande, categorie, date, parole, foto), modificabili senza toccare il codice | Must |
@@ -129,7 +129,29 @@ Per ogni modalità: cosa mostra lo schermo pubblico, cosa offre la plancia e cos
 | 5. Triello | Materia del round, domanda, 4 alternative, valore (punti o scossa) | 6 round per materia; risposta corretta evidenziata; il round finisce alla risposta giusta | Gestione punti rinviata dalle regole; chi sceglie il valore? È a turni tra 3 concorrenti? |
 | 6. Centos | Domanda a risposta aperta, timer a 5 s per turno, concorrente di turno | Risposta sempre visibile; timer avviato dai conduttori; passaggio automatico del turno ogni 5 s o a risposta sbagliata | Prima versione: si gioca solo il turno di risposta, senza vincitore né conteggio. Regole di vittoria ed eliminazione rinviate, con la struttura predisposta per aggiungerle. |
 | 7. Ghigliottina | Coppie di parole (5 scelte), le parole scelte salgono in alto a destra; timer di 2 minuti con le 5 parole; poi la parola soluzione | Parola corretta di ogni coppia; registrazione della scelta; avvio timer; rivelazione | Se il concorrente sceglie la parola sbagliata cosa vede il pubblico (tipicamente il montepremi si dimezza)? |
-| 8. Duelli | Due concorrenti con foto, sinistra e destra; parola o definizione con lettere che compaiono a caso; due timer | Soluzione; comparsa lettere automatica o a comando; ultima lettera solo a comando; alternanza sx/dx; due timer indipendenti | Le lettere compaiono a tempo o solo a clic? I timer sono a scalare come negli scacchi? |
+| 8. Duelli | Due concorrenti con foto, sinistra e destra; parola o definizione con lettere che compaiono a caso; due timer | Soluzione; comparsa lettere automatica o a comando; ultima lettera solo a comando; alternanza sx/dx; due timer indipendenti | Risolto il 27/11: lettere automatiche ogni N secondi, l'ultima solo con conferma; due orologi a scalare come negli scacchi. Requisiti e punti aperti nella sezione 5.1. |
+
+### 5.1 Duelli (analizzati il 27/11)
+
+Il duello è un gioco a sé, avviabile in qualsiasi momento: la serata resta in pausa finché il duello non finisce. Ha plancia, registro e Annulla propri, e va in onda sul proiettore a comando.
+
+| ID | Requisito | Priorità |
+| --- | --- | --- |
+| RC-15 | Duello in qualsiasi momento della serata, avviato dalla plancia. Durante il duello la serata è in pausa (eventi di gioco bloccati, timer congelati); a duello finito si riprende dal punto esatto | Must |
+| RC-16 | Plancia del duello dedicata, su un indirizzo proprio. Un solo schermo pubblico: un comando "in onda" in plancia sceglie se proiettare la serata o il duello | Must |
+| RC-17 | Registro e Annulla del duello separati da quelli della serata: annullare in una plancia non tocca l'altra; dopo un crash si riprendono entrambi | Must |
+| RC-18 | Storico delle parole dei duelli in un file a parte in dati/, valido tra serate diverse e modificabile a mano (per azzerarlo o precaricare le parole degli anni passati). Una parola andata in onda resta bruciata anche se poi si annulla | Must |
+| RC-19 | Due orologi a scalare come negli scacchi, uno per lato, durata da configurazione. Corre solo l'orologio di chi ha la palla: a ogni risposta, giusta o sbagliata, si ferma e riparte quello dell'altro. La scadenza la decide il server. Pausa dalla plancia e dalla Pausa generale. Dopo un Annulla o una ripresa da crash gli orologi tornano al valore del momento annullato e restano in pausa | Must |
+| RC-20 | Lettere della parola scoperte in automatico, in posizione casuale, ogni N secondi (configurazione) mentre corre l'orologio di chi ha la palla. L'ultima lettera si scopre solo con conferma della plancia. Il pubblico riceve solo le lettere scoperte, mai la parola intera. Annulla salta le lettere automatiche e toglie l'ultimo comando del conduttore | Must |
+
+Da chiarire:
+
+- Dopo una risposta sbagliata (la palla passa comunque all'altro, deciso il 27/11), l'altro prova sulla stessa parola con le lettere già scoperte o ne riceve una nuova? Si può passare senza rispondere? Chi arriva a zero perde?
+- Dopo una risposta giusta l'altro riceve sempre una parola nuova?
+- Il pubblico vede la definizione e le caselle della parola, o a volte si indovina la definizione?
+- Valori di partenza: N secondi tra una lettera e l'altra, durata degli orologi.
+- La plancia del duello la usa lo stesso conduttore sullo stesso portatile o un'altra persona su un altro dispositivo?
+- La Pausa generale ferma anche i timer liberi?
 
 ## 6. Requisiti non funzionali
 
@@ -148,7 +170,7 @@ Il punto più critico è la sincronizzazione tra le due schede; subito dopo veng
 | --- | --- | --- | --- |
 | 1 | Sincronizzazione plancia → pubblico | Se il pubblico resta indietro o si desincronizza, la diretta si blocca | Deciso: server in Docker sullo stesso portatile, raggiunto in localhost, con aggiornamenti in tempo reale e riconnessione automatica. In futuro la plancia potrà passare su un altro dispositivo senza riscrivere nulla |
 | 2 | Punteggi e montepremi non definiti | Influenzano Triello, Ghigliottina, la scossa e il passaggio tra modalità | Deciso: niente punteggio automatico; i conduttori lo tengono e lo mostrano con il riquadro a comparsa (RC-12) |
-| 3 | Timer precisi e coerenti | Centos (5 s), Ghigliottina (2 min), Duelli (2 timer): un timer che salta falsa il gioco | Il tempo lo calcola solo la plancia; il pubblico lo mostra e basta -&#32; |
+| 3 | Timer precisi e coerenti | Centos (5 s), Ghigliottina (2 min), Duelli (2 timer): un timer che salta falsa il gioco | I timer di gioco li calcola il server (fa fede la sua ora); plancia e pubblico disegnano il conto alla rovescia e basta -&#32; |
 | 4 | Errore del conduttore in diretta | Un clic sbagliato rivela la soluzione o brucia una risposta | Annulla ultima azione, separazione netta tra pulsanti "mostra" e "segna", tasto blackout |
 | 5 | Fuga della soluzione sul proiettore | Se la plancia finisce sul proiettore (schermo duplicato invece che esteso) il gioco è rovinato | Avviso in plancia e checklist di setup prima della serata |
 | 6 | Preparazione dei contenuti | Oggi i contenuti sono dentro il PowerPoint; ogni modalità ha un formato diverso | Un modello di foglio di calcolo per modalità e un'importazione; recupero dei contenuti degli anni passati |
@@ -175,10 +197,10 @@ Requisiti emersi durante lo sviluppo: vanno analizzati e trasformati in requisit
 
 | Annotato | Requisito | Stato |
 | --- | --- | --- |
-| 24/11 | **Duello in qualsiasi momento.** Il duello può avvenire in qualsiasi momento della serata, non solo come modalità scelta in scaletta. Si svolge in una schermata pubblico separata e ha una plancia di controllo dedicata. | Da analizzare |
-| 24/11 | **Duelli senza ripetizioni.** Bisogna tenere traccia di parole e definizioni già uscite nei duelli, per non riproporle (estende RC-13 ai duelli). | Da analizzare |
+| 24/11 | **Duello in qualsiasi momento.** Il duello può avvenire in qualsiasi momento della serata, non solo come modalità scelta in scaletta. Si svolge in una schermata pubblico separata e ha una plancia di controllo dedicata. | Formalizzato |
+| 24/11 | **Duelli senza ripetizioni.** Bisogna tenere traccia di parole e definizioni già uscite nei duelli, per non riproporle (estende RC-13 ai duelli). | Formalizzato |
 
-Punti da analizzare: se il duello sospende la modalità in corso o gira in parallelo; cosa mostra intanto lo schermo pubblico principale; come si aprono la schermata e la plancia del duello; come funzionano registro e annulla con due giochi aperti; se le parole usate valgono per la serata o anche tra serate diverse.
+Analizzati il 27/11 e formalizzati in RC-15 … RC-20 (sezione 5.1). Il duello sospende la serata invece di girare in parallelo; i punti ancora aperti sono elencati lì.
 
 ## 9. Fasi di rilascio proposte
 
