@@ -80,6 +80,7 @@ Esito CicloDomanda::su_mostrata(const Evento& e, Traccia* t) {
         case TipoEvento::RicaricaContenuti:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -116,6 +117,7 @@ Esito CicloDomanda::su_selezionata(const Evento& e, Traccia* t) {
         case TipoEvento::RicaricaContenuti:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -162,6 +164,7 @@ Esito CicloDomanda::su_sbagliata(const Evento& e, Traccia* t) {
         case TipoEvento::RicaricaContenuti:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);

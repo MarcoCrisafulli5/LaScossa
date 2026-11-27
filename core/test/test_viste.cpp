@@ -199,6 +199,7 @@ TEST_CASE("plancia: soluzione, categorie, turno e debug") {
     REQUIRE(v.modalita_attiva.has_value());
     CHECK(*v.modalita_attiva == IdModalita::Estas);
     CHECK(v.modalita[0].disponibile);
+    CHECK(v.modalita[1].disponibile);  // ESA
     CHECK(v.modalita[0].giocata);
     CHECK_FALSE(v.modalita[7].disponibile);
 

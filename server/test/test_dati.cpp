@@ -1,5 +1,7 @@
 #include <doctest/doctest.h>
 
+#include <algorithm>
+
 #include "cartella_temporanea.hpp"
 #include "csv.hpp"
 #include "dati.hpp"
@@ -74,6 +76,40 @@ TEST_CASE("config: valori, PIN e errori") {
     CHECK_THROWS_AS(leggi_config("{non json", cfg, imp), ErroreDati);
 }
 
+TEST_CASE("esa: frasi valide, avvisi ed errori con file e riga") {
+    std::vector<std::string> avvisi;
+    const auto frasi = leggi_esa(leggi_csv("soluzione;indizio1;indizio2;indizio3\n"
+                                           "Il dado è tratto;Roma;Cesare;Rubicone\n"
+                                           "Il dado è tratto;Alea;Iacta;Est\n",
+                                           "e.csv"),
+                                 "e.csv", avvisi);
+    REQUIRE(frasi.size() == 2);
+    CHECK(frasi[0].indizi[2] == "Rubicone");  // ordine delle colonne libero
+    CHECK(frasi[0].soluzione == "Il dado è tratto");
+    REQUIRE(avvisi.size() == 1);
+    CHECK(avvisi[0].find("ripetuta") != std::string::npos);
+
+    CHECK_THROWS_WITH_AS(
+        leggi_esa(leggi_csv("indizio1;indizio2;indizio3;soluzione\nRoma;;Rubicone;X\n", "e.csv"), "e.csv", avvisi),
+        "e.csv riga 2: indizio2 vuoto", ErroreDati);
+    CHECK_THROWS_WITH_AS(
+        leggi_esa(leggi_csv("indizio1;indizio2;indizio3;soluzione\nA;B;C;\n", "e.csv"), "e.csv", avvisi),
+        "e.csv riga 2: soluzione vuota", ErroreDati);
+    CHECK_THROWS_WITH_AS(leggi_esa(leggi_csv("indizio1;indizio2;soluzione\nA;B;C\n", "e.csv"), "e.csv", avvisi),
+                         doctest::Contains("indizio3"), ErroreDati);
+}
+
+TEST_CASE("config: tempi di ESA in secondi") {
+    Configurazione cfg;
+    Impostazioni imp;
+    CHECK(cfg.esa.lettura_indizio_ms == 3000);
+    leggi_config(R"({"esa":{"tempoLetturaIndizioSec":2,"timerRispostaSec":45}})", cfg, imp);
+    CHECK(cfg.esa.lettura_indizio_ms == 2000);
+    CHECK(cfg.esa.timer_risposta_ms == 45000);
+    CHECK_THROWS_WITH_AS(leggi_config(R"({"esa":{"timerRispostaSec":0}})", cfg, imp),
+                         doctest::Contains("esa.timerRispostaSec"), ErroreDati);
+}
+
 TEST_CASE("carica_dati: cartella completa e file mancanti") {
     test::CartellaTemporanea d;
     CHECK_THROWS_WITH_AS(carica_dati(d.percorso()), doctest::Contains("config.json"), ErroreDati);
@@ -83,4 +119,7 @@ TEST_CASE("carica_dati: cartella completa e file mancanti") {
     const DatiSerata dati = carica_dati(d.percorso());
     CHECK(dati.configurazione.numero_concorrenti == 3);
     CHECK(dati.contenuti.estas.size() == 1);
+    CHECK(dati.contenuti.esa.empty());  // mod2_esa.csv facoltativo: solo un avviso
+    CHECK(std::any_of(dati.avvisi.begin(), dati.avvisi.end(),
+                      [](const std::string& a) { return a.find("mod2_esa.csv") != std::string::npos; }));
 }

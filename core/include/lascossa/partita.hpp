@@ -10,6 +10,10 @@
 
 namespace lascossa {
 
+// Argomento di una PAUSA_GENERALE messa dal sistema (dopo un Annulla o la ripresa da un crash con un
+// timer che correva), non dal conduttore: un Annulla successivo la salta.
+inline constexpr int kPausaAutomatica = 1;
+
 struct EventoRifiutato {
     Evento evento;
     std::string motivo;
@@ -19,7 +23,9 @@ class Partita {
 public:
     Partita(Configurazione cfg, Contenuti contenuti);
 
-    // Applica un evento. Annulla rigioca il registro senza l'ultimo evento accettato.
+    // Applica un evento. Annulla rigioca il registro senza l'ultimo evento accettato; se dopo il
+    // replay un timer di gioco corre, la serata va in pausa generale con il timer fermo al valore
+    // che aveva nel momento annullato (altrimenti potrebbe scadere subito per il tempo passato).
     Esito applica(const Evento& e);
 
     const Serata& serata() const { return *serata_; }

@@ -34,9 +34,15 @@ durata nella vista. Ogni modalità a scelta nuova ha il suo parametro e usa lo s
   oggetto c'è `AttesaOggetto` (25/11): il pubblico vede solo la categoria, la plancia vede l'oggetto in
   arrivo, `MOSTRA_DOMANDA` lo rivela. Cambio categoria solo a oggetto concluso o in attesa; una
   categoria ripresa continua dall'oggetto successivo.
+- **2. ESA** (27/11): `AttesaFrase` (pubblico: solo il titolo; plancia: anteprima con soluzione) →
+  `MOSTRA_DOMANDA` → `InGioco`: 3 indizi, uno ogni `esa.tempoLetturaIndizioSec` (li svela il browser
+  seguendo il timer), poi il timer di gioco di `esa.timerRispostaSec`. Esiti: `CONFERMA_GIUSTA` →
+  `Indovinata`, `RIVELA` → `Rivelata`, `TIMER_SCADUTO` (dal server) → `Scaduta`; da `Scaduta` si può
+  ancora dare per giusta. `CONFERMA_SBAGLIATA` rifiutato: si riprova finché c'è tempo. Niente turni:
+  allo scadere frase nuova e concorrente nuovo, scelti dai conduttori.
 - `MOSTRA_DOMANDA` è generico: usalo anche nelle altre modalità quando serve una pausa tra il
   contesto (round, materia, date) e la domanda.
-- Le altre 7 sono nell'enum `IdModalita` ma `Serata::disponibile()` restituisce false.
+- Le altre 6 sono nell'enum `IdModalita` ma `Serata::disponibile()` restituisce false.
 
 ## Ipotesi da confermare con l'utente (non trasformarle in certezze)
 
@@ -45,8 +51,11 @@ durata nella vista. Ogni modalità a scelta nuova ha il suo parametro e usa lo s
 
 ## Timer (RC-05, deciso il 27/11)
 
-- **Timer di gioco**: nel server (servizio della Regia), la scadenza è un evento registrato con
-  `t_ms`; i browser disegnano solo il conto alla rovescia. Si fermano con la Pausa generale.
+- **Timer di gioco** (fatti, 27/11): `TimerGioco` nella modalità (core, senza orologio); il thread in
+  `main.cpp` chiama `Regia::scadenza()` sotto lo stesso mutex degli eventi e `TIMER_SCADUTO` finisce nel
+  registro. I browser disegnano il conto alla rovescia con l'ora del server (`web/src/orologio.ts`).
+  Pausa generale li congela. Annulla con un timer che corre, e la ripresa dopo un crash, portano la
+  serata in pausa generale (`kPausaAutomatica`): riparte il conduttore con "Riprendi".
 - **Timer liberi**: creati dalla plancia, passano dal server solo per arrivare al pubblico, nessuna
   macchina li legge. Aperto: se sopravvivono a un crash e se la Pausa generale li ferma.
 

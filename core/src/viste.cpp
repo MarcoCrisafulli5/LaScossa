@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 
+#include "lascossa/esa.hpp"
 #include "lascossa/estas.hpp"
 
 namespace lascossa {
@@ -81,6 +82,44 @@ EstasPlancia estas_plancia(const Estas& m) {
     return v;
 }
 
+const Esa* come_esa(const Modalita* m) {
+    return m != nullptr && m->id() == IdModalita::Esa ? dynamic_cast<const Esa*>(m) : nullptr;
+}
+
+TimerVista timer_vista(const TimerGioco& t) {
+    return {std::string(TimerGioco::nome(t.stato())), t.durata_ms(), t.totale_ms(), t.scadenza_ms(), t.residuo_ms()};
+}
+
+FrasePlancia frase_plancia(const FraseEsa& f) {
+    return {std::vector<std::string>(f.indizi.begin(), f.indizi.end()), f.soluzione};
+}
+
+// ------------------------------------------------------------ ESA
+
+EsaPubblico esa_pubblico(const Esa& m) {
+    EsaPubblico v;
+    v.stato = std::string(m.nome_stato());
+    if (const FraseEsa* f = m.frase_corrente()) {
+        v.indizi.assign(f->indizi.begin(), f->indizi.end());
+        if (m.frase_rivelata()) v.frase = f->soluzione;
+    }
+    v.timer = timer_vista(m.timer());
+    v.lettura_indizio_ms = m.lettura_indizio_ms();
+    return v;
+}
+
+EsaPlancia esa_plancia(const Esa& m) {
+    EsaPlancia v;
+    v.stato = std::string(m.nome_stato());
+    v.giocate = m.giocate();
+    v.totale = m.totale();
+    if (const FraseEsa* f = m.frase_corrente()) v.frase = frase_plancia(*f);
+    if (const FraseEsa* f = m.prossima_frase()) v.anteprima = frase_plancia(*f);
+    v.timer = timer_vista(m.timer());
+    v.lettura_indizio_ms = m.lettura_indizio_ms();
+    return v;
+}
+
 // Argomenti da provare per gli eventi che ne hanno uno, in base alla modalità attiva.
 std::vector<int> argomenti(TipoEvento t, const Serata& s) {
     std::vector<int> args;
@@ -117,6 +156,7 @@ std::vector<int> argomenti(TipoEvento t, const Serata& s) {
         case TipoEvento::ConfermaSbagliata:
         case TipoEvento::Rivela:
         case TipoEvento::PassaTurno:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: args.push_back(-1); break;
     }
     return args;
@@ -144,6 +184,7 @@ std::string_view nome(StatoOpzione s) {
 std::vector<EventoAmmesso> eventi_ammessi(const Partita& p) {
     std::vector<EventoAmmesso> ammessi;
     for (TipoEvento t : kTuttiGliEventi) {
+        if (t == TipoEvento::TimerScaduto) continue;  // lo genera solo il server, mai la plancia
         if (t == TipoEvento::Annulla) {
             if (!p.registro().empty()) ammessi.push_back({t, -1});
             continue;
@@ -170,6 +211,7 @@ VistaPubblico vista_pubblico(const Partita& p) {
             v.estas = estas_pubblico(*e);
             v.estas->attesa_esito_ms = s.configurazione().estas.attesa_esito_ms;
         }
+        if (const Esa* e = come_esa(s.modalita())) v.esa = esa_pubblico(*e);
     }
     return v;
 }
@@ -186,6 +228,7 @@ VistaPlancia vista_plancia(const Partita& p, std::size_t quanti_debug) {
 
     v.contenuti.estas_categorie = s.contenuti().estas.size();
     for (const CategoriaEstas& c : s.contenuti().estas) v.contenuti.estas_oggetti += c.oggetti.size();
+    v.contenuti.esa_frasi = s.contenuti().esa.size();
 
     for (IdModalita m : kTutteLeModalita) {
         const bool giocata = std::find(s.giocate().begin(), s.giocate().end(), m) != s.giocate().end();
@@ -198,6 +241,7 @@ VistaPlancia vista_plancia(const Partita& p, std::size_t quanti_debug) {
             v.estas = estas_plancia(*e);
             v.estas->attesa_esito_ms = s.configurazione().estas.attesa_esito_ms;
         }
+        if (const Esa* e = come_esa(s.modalita())) v.esa = esa_plancia(*e);
     }
     v.ammessi = eventi_ammessi(p);
 

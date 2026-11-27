@@ -26,6 +26,7 @@ export type NomeEvento =
   | "CONFERMA_SBAGLIATA"
   | "RIVELA"
   | "PASSA_TURNO"
+  | "TIMER_SCADUTO" // solo dal server: la plancia non lo invia mai
   | "ANNULLA"
   // gestito dal server, fuori dalle macchine a stati
   | "NUOVA_PARTITA";
@@ -42,6 +43,17 @@ export interface Riquadro {
   testo: string;
 }
 
+// Timer di gioco (vedi TimerVista in viste.hpp). I browser disegnano il conto alla rovescia con
+// l'ora del server: se corre, mancano scadenzaMs - ora; altrimenti residuoMs. Il conto alla
+// rovescia visibile è al massimo durataMs; la parte iniziale (totaleMs - durataMs) è il ritardo.
+export interface TimerVista {
+  stato: "spento" | "corre" | "pausa" | "fermo" | "scaduto";
+  durataMs: number;
+  totaleMs: number;
+  scadenzaMs: number;
+  residuoMs: number;
+}
+
 // ------------------------------------------------------------------ pubblico
 
 export type StatoEstas = "SceltaCategoria" | "AttesaOggetto" | "OggettoInGioco" | "CategoriaFinita";
@@ -54,11 +66,22 @@ export interface EstasPubblico {
   attesaEsitoMs: number; // config: per quanto un'opzione appena giudicata resta gialla
 }
 
+export type StatoEsa = "AttesaFrase" | "InGioco" | "Indovinata" | "Rivelata" | "Scaduta" | "Finita";
+
+export interface EsaPubblico {
+  stato: StatoEsa;
+  indizi: string[]; // tutti e tre: li svela il browser, uno ogni letturaIndizioMs
+  frase: string; // vuota finché la frase non è indovinata, rivelata o scaduta
+  timer: TimerVista;
+  letturaIndizioMs: number;
+}
+
 export interface VistaPubblico {
   blackout: boolean;
   riquadro: Riquadro;
   modalita: Modalita | null;
   estas: EstasPubblico | null;
+  esa: EsaPubblico | null;
 }
 
 // ------------------------------------------------------------------ plancia
@@ -82,6 +105,21 @@ export interface EstasPlancia {
   concorrenteDiTurno: number;
   numeroConcorrenti: number;
   attesaEsitoMs: number; // config: per quanto la plancia blocca "prossimo" dopo un giudizio
+}
+
+export interface FrasePlancia {
+  indizi: string[];
+  soluzione: string;
+}
+
+export interface EsaPlancia {
+  stato: StatoEsa;
+  giocate: number;
+  totale: number;
+  frase: FrasePlancia | null;
+  anteprima: FrasePlancia | null; // in AttesaFrase: la prossima, solo per i conduttori
+  timer: TimerVista;
+  letturaIndizioMs: number;
 }
 
 export interface EventoRegistrato {
@@ -113,11 +151,12 @@ export interface VistaPlancia {
   blackout: boolean;
   riquadro: Riquadro;
   numeroConcorrenti: number;
-  contenuti: { estasCategorie: number; estasOggetti: number };
+  contenuti: { estasCategorie: number; estasOggetti: number; esaFrasi: number };
   modalita: (Modalita & { disponibile: boolean; giocata: boolean })[];
   modalitaAttiva: Modalita | null;
   statoModalita: string;
   estas: EstasPlancia | null;
+  esa: EsaPlancia | null;
   ammessi: EventoAmmesso[];
   debug: {
     lunghezzaRegistro: number;

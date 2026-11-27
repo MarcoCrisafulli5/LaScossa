@@ -4,7 +4,7 @@ services:
   lascossa:
     build: .
     # Il tag segue il file VERSION: aggiornali insieme a ogni rilascio (vedi CHANGELOG.md).
-    image: lascossa:0.1.0
+    image: lascossa:0.2.0
     ports:
       # Solo localhost: plancia e pubblico girano sullo stesso portatile. Per una plancia su
       # tablet in Wi-Fi togliere "127.0.0.1:" e attivare il PIN in dati/config.json.

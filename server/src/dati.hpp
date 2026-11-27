@@ -1,6 +1,7 @@
 // Caricamento e validazione dei dati della serata dalla cartella dati/:
 //   config.json               parametri di gioco
 //   contenuti/mod1_estas.csv  categoria;oggetto;appartiene
+//   contenuti/mod2_esa.csv    indizio1;indizio2;indizio3;soluzione (facoltativo: senza, ESA non ha frasi)
 // Un errore blocca l'avvio con un messaggio che indica file e riga.
 #pragma once
 
@@ -33,6 +34,9 @@ void leggi_config(std::string_view testo, Configurazione& cfg, Impostazioni& imp
 // Colonne: categoria;oggetto;appartiene (si/sì/no). Le categorie seguono l'ordine del file.
 std::vector<CategoriaEstas> leggi_estas(const TabellaCsv& t, std::string_view nome_file,
                                         std::vector<std::string>& avvisi);
+
+// Colonne: indizio1;indizio2;indizio3;soluzione, tutte obbligatorie. Le frasi seguono l'ordine del file.
+std::vector<FraseEsa> leggi_esa(const TabellaCsv& t, std::string_view nome_file, std::vector<std::string>& avvisi);
 
 DatiSerata carica_dati(const std::filesystem::path& cartella);
 

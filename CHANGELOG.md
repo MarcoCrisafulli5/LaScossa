@@ -8,6 +8,22 @@ Ogni modifica aggiunge una riga in **Non rilasciato**. Al rilascio quella sezion
 
 ## [Non rilasciato]
 
+## [0.2.0] - 2026-11-27
+
+Modalità 2 ESA e primi timer di gioco.
+
+### Aggiunto
+
+- Modalità 2 **ESA**: tre indizi che compaiono uno alla volta (ogni `esa.tempoLetturaIndizioSec`, 3 s),
+  poi il timer di risposta (`esa.timerRispostaSec`, 30 s) disegnato come una barra che si accorcia.
+  La frase si rivela alla risposta giusta, con "Rivela frase" o allo scadere del tempo; dopo lo scadere
+  il conduttore può ancora darla per giusta. Prima di ogni frase il pubblico vede solo il titolo e la
+  plancia l'anteprima con la soluzione. Contenuti in `dati/contenuti/mod2_esa.csv`.
+- Timer di gioco gestiti dal server: la scadenza è registrata come un clic, si fermano con la pausa
+  generale, e plancia e pubblico li disegnano con l'ora del server.
+- Annulla con un timer che corre, e la ripresa dopo un crash, mettono la serata in pausa generale con il
+  timer fermo: si riparte con "Riprendi", senza che il timer scada da solo per il tempo passato.
+
 ## [0.1.0] - 2026-11-27
 
 Prima versione giocabile: la serata con la modalità 1.
@@ -35,5 +51,6 @@ Prima versione giocabile: la serata con la modalità 1.
 - Duelli analizzati come seconda partita accanto alla serata (RC-15 … RC-20); regole di gioco rimandate.
 - Due tipi di timer (RC-05): timer di gioco nel server, timer liberi creati dalla plancia.
 
-[Non rilasciato]: https://github.com/MarcoCrisafulli5/LaScossa/compare/v0.1.0...HEAD
+[Non rilasciato]: https://github.com/MarcoCrisafulli5/LaScossa/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/MarcoCrisafulli5/LaScossa/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MarcoCrisafulli5/LaScossa/releases/tag/v0.1.0

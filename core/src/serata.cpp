@@ -28,8 +28,8 @@ Serata::Serata(const Serata& altra)
 
 bool Serata::disponibile(IdModalita m) {
     switch (m) {
-        case IdModalita::Estas: return true;
-        case IdModalita::Esa:
+        case IdModalita::Estas:
+        case IdModalita::Esa: return true;
         case IdModalita::Date:
         case IdModalita::LaScossa:
         case IdModalita::Triello:
@@ -63,6 +63,7 @@ std::unique_ptr<Modalita> Serata::crea_modalita(int id) const {
         case IdModalita::Estas:
             return std::make_unique<Estas>(contenuti_.estas, cfg_.numero_concorrenti);
         case IdModalita::Esa:
+            return std::make_unique<Esa>(contenuti_.esa, cfg_.esa.lettura_indizio_ms, cfg_.esa.timer_risposta_ms);
         case IdModalita::Date:
         case IdModalita::LaScossa:
         case IdModalita::Triello:
@@ -89,10 +90,12 @@ Esito Serata::globale(const Evento& e, Traccia* t) {
         case TipoEvento::PausaGenerale:
             if (pausa_) return Esito::rifiuto("già in pausa");
             pausa_ = true;
+            if (modalita_) modalita_->pausa_timer(e.t_ms);  // i timer di gioco si congelano
             break;
         case TipoEvento::RiprendiGenerale:
             if (!pausa_) return Esito::rifiuto("non in pausa");
             pausa_ = false;
+            if (modalita_) modalita_->riprendi_timer(e.t_ms);
             break;
         case TipoEvento::BlackoutOn:
             if (blackout_) return Esito::rifiuto("blackout già attivo");
@@ -127,6 +130,7 @@ Esito Serata::globale(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: return non_ammesso(e.tipo, stato_);
     }
     traccia(t, kMacchina, nome(stato_), e.tipo, nome(stato_));
@@ -159,6 +163,7 @@ Esito Serata::su_lobby(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -203,6 +208,7 @@ Esito Serata::su_scelta_modalita(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -231,6 +237,7 @@ Esito Serata::su_in_gioco(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
             if (pausa_) {
                 return Esito::rifiuto("gioco in pausa generale");
             }
@@ -242,6 +249,11 @@ Esito Serata::su_in_gioco(const Evento& e, Traccia* t) {
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
+}
+
+std::optional<std::int64_t> Serata::prossima_scadenza() const {
+    if (pausa_ || stato_ != Stato::InGioco || !modalita_) return std::nullopt;
+    return modalita_->prossima_scadenza();
 }
 
 Esito Serata::su_chiusa(const Evento& e) { return non_ammesso(e.tipo, stato_); }

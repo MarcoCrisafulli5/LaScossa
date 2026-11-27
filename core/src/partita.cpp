@@ -9,12 +9,22 @@ Partita::Partita(Configurazione cfg, Contenuti contenuti)
 
 Esito Partita::applica(const Evento& e) {
     if (e.tipo == TipoEvento::Annulla) {
-        if (registro_.empty()) {
+        // Le pause automatiche (Annulla precedenti, ripresa dopo un crash) non contano: si toglie l'ultimo evento vero.
+        auto fine = registro_.end();
+        while (fine != registro_.begin() && (fine - 1)->tipo == TipoEvento::PausaGenerale &&
+               (fine - 1)->arg == kPausaAutomatica) {
+            --fine;
+        }
+        if (fine == registro_.begin()) {
             rifiutati_.push_back({e, "niente da annullare"});
             return Esito::rifiuto("niente da annullare");
         }
-        std::vector<Evento> eventi(registro_.begin(), registro_.end() - 1);
-        rigioca(eventi);
+        const Evento annullato = *(fine - 1);
+        rigioca(std::vector<Evento>(registro_.begin(), fine - 1));
+        if (serata_->prossima_scadenza()) {
+            const Evento pausa{TipoEvento::PausaGenerale, kPausaAutomatica, annullato.t_ms};
+            if (serata_->gestisci(pausa, &traccia_)) registro_.push_back(pausa);
+        }
         return Esito::ok();
     }
 

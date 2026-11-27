@@ -50,6 +50,11 @@ public:
     void disconnesso(IdClient c);
     std::vector<Uscita> messaggio(IdClient c, std::string_view testo, std::int64_t ora_ms);
 
+    // Timer di gioco. Il server richiama scadenza() quando arriva l'ora di prossima_scadenza():
+    // se il timer è davvero scaduto, TIMER_SCADUTO entra come un evento (registro, poi viste a tutti).
+    std::optional<std::int64_t> prossima_scadenza() const { return partita_->serata().prossima_scadenza(); }
+    std::vector<Uscita> scadenza(std::int64_t ora_ms);
+
     const Partita& partita() const { return *partita_; }
     const std::vector<std::string>& avvisi() const { return avvisi_; }
     std::filesystem::path file_registro() const { return registro_->file(); }

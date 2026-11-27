@@ -25,12 +25,14 @@ Tutta la logica sta in un server C++20 (in un container Docker) che possiede lo 
 | --- | --- |
 | Macchine a stati: serata, ciclo della domanda, partita (registro, annulla, replay) | Fatto, con test |
 | Modalità 1, Estas o non Estas | Fatto, con test |
+| Modalità 2, ESA (indizi in sequenza, timer di gioco) | Fatto, con test ed e2e |
 | Proiezioni plancia/pubblico ed eventi ammessi | Fatto, con test |
 | Server HTTP + WebSocket (Crow), caricamento CSV e config, registro su file con ripresa dopo crash | Fatto, con test ed e2e |
 | Plancia, schermo pubblico e pagina di debug (React + Vite) | Prima versione |
 | Dockerfile e docker-compose | Fatto: build con test nel container, immagine di 80 MB |
-| Modalità 2–8 | Da fare |
-| Timer (RC-05) | Da analizzare |
+| Modalità 3–8 | Da fare (Duelli: regole rimandate) |
+| Timer di gioco (RC-05): servizio nel server, pausa generale, annulla e ripresa in pausa | Fatto, usato da ESA |
+| Timer liberi creati dalla plancia (RC-05) | Da fare |
 | Schema JSON con generatore dei tipi C++/TypeScript | Da fare |
 
 ## Provare la plancia

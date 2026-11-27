@@ -33,6 +33,18 @@ enum class StatoOpzione {
 
 std::string_view nome(StatoOpzione s);
 
+// Timer di gioco per i browser, che disegnano il conto alla rovescia da soli con l'ora del server:
+// se corre, tempo che manca = scadenza_ms - ora; altrimenti residuo_ms. Il conto alla rovescia
+// visibile è al massimo durata_ms; la parte iniziale (totale_ms - durata_ms) è il ritardo prima
+// che parta (in ESA: gli indizi). Uguale per plancia e pubblico.
+struct TimerVista {
+    std::string stato;  // "spento", "corre", "pausa", "fermo", "scaduto"
+    std::int64_t durata_ms = 0;
+    std::int64_t totale_ms = 0;
+    std::int64_t scadenza_ms = 0;  // ora del server; valida se stato == "corre"
+    std::int64_t residuo_ms = 0;   // tempo che mancava alla scadenza, se non corre
+};
+
 // ---------------------------------------------------------------- pubblico
 
 struct OpzionePubblico {
@@ -48,12 +60,23 @@ struct EstasPubblico {
     int attesa_esito_ms = 0;  // da config: quanto resta gialla un'opzione appena giudicata
 };
 
+// ESA: gli indizi arrivano tutti, li svela il browser uno ogni lettura_indizio_ms seguendo il timer.
+// La frase c'è solo quando è stata indovinata, rivelata o è scaduto il tempo.
+struct EsaPubblico {
+    std::string stato;  // stato della macchina ESA
+    std::vector<std::string> indizi;  // vuoto in AttesaFrase e Finita
+    std::string frase;                // vuota finché la soluzione non può essere mostrata
+    TimerVista timer;
+    std::int64_t lettura_indizio_ms = 0;
+};
+
 struct VistaPubblico {
     bool blackout = false;
     bool riquadro_visibile = false;
     std::string riquadro_testo;
     std::optional<IdModalita> modalita;  // nullopt: schermata di attesa con il logo
     std::optional<EstasPubblico> estas;
+    std::optional<EsaPubblico> esa;
 };
 
 // ---------------------------------------------------------------- plancia
@@ -98,10 +121,26 @@ struct EstasPlancia {
     int attesa_esito_ms = 0;  // da config: la plancia blocca "prossimo" finché il pubblico non colora
 };
 
+struct FrasePlancia {
+    std::vector<std::string> indizi;
+    std::string soluzione;
+};
+
+struct EsaPlancia {
+    std::string stato;  // stato della macchina ESA
+    std::size_t giocate = 0;
+    std::size_t totale = 0;
+    std::optional<FrasePlancia> frase;      // in gioco o appena conclusa
+    std::optional<FrasePlancia> anteprima;  // in AttesaFrase: la prossima, solo per i conduttori
+    TimerVista timer;
+    std::int64_t lettura_indizio_ms = 0;
+};
+
 // Riepilogo dei contenuti caricati, mostrato in plancia prima di iniziare.
 struct RiepilogoContenuti {
     std::size_t estas_categorie = 0;
     std::size_t estas_oggetti = 0;
+    std::size_t esa_frasi = 0;
 };
 
 struct EventoRegistrato {
@@ -121,6 +160,7 @@ struct VistaPlancia {
     std::optional<IdModalita> modalita_attiva;
     std::string stato_modalita;
     std::optional<EstasPlancia> estas;
+    std::optional<EsaPlancia> esa;
     std::vector<EventoAmmesso> ammessi;
 
     // debug

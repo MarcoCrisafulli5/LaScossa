@@ -54,6 +54,38 @@ json estas(const EstasPubblico& e) {
             {"attesaEsitoMs", e.attesa_esito_ms}};
 }
 
+json timer(const TimerVista& t) {
+    return {{"stato", t.stato},
+            {"durataMs", t.durata_ms},
+            {"totaleMs", t.totale_ms},
+            {"scadenzaMs", t.scadenza_ms},
+            {"residuoMs", t.residuo_ms}};
+}
+
+json frase(const FrasePlancia& f) { return {{"indizi", f.indizi}, {"soluzione", f.soluzione}}; }
+
+json esa(const EsaPlancia& e) {
+    return {
+        {"stato", e.stato},
+        {"giocate", e.giocate},
+        {"totale", e.totale},
+        {"frase", e.frase ? frase(*e.frase) : json(nullptr)},
+        {"anteprima", e.anteprima ? frase(*e.anteprima) : json(nullptr)},
+        {"timer", timer(e.timer)},
+        {"letturaIndizioMs", e.lettura_indizio_ms},
+    };
+}
+
+json esa(const EsaPubblico& e) {
+    return {
+        {"stato", e.stato},
+        {"indizi", e.indizi},
+        {"frase", e.frase},
+        {"timer", timer(e.timer)},
+        {"letturaIndizioMs", e.lettura_indizio_ms},
+    };
+}
+
 }  // namespace
 
 json a_json(const VistaPlancia& v) {
@@ -90,11 +122,15 @@ json a_json(const VistaPlancia& v) {
         {"blackout", v.blackout},
         {"riquadro", {{"visibile", v.riquadro_visibile}, {"testo", v.riquadro_testo}}},
         {"numeroConcorrenti", v.numero_concorrenti},
-        {"contenuti", {{"estasCategorie", v.contenuti.estas_categorie}, {"estasOggetti", v.contenuti.estas_oggetti}}},
+        {"contenuti",
+         {{"estasCategorie", v.contenuti.estas_categorie},
+          {"estasOggetti", v.contenuti.estas_oggetti},
+          {"esaFrasi", v.contenuti.esa_frasi}}},
         {"modalita", mod},
         {"modalitaAttiva", v.modalita_attiva ? modalita(*v.modalita_attiva) : json(nullptr)},
         {"statoModalita", v.stato_modalita},
         {"estas", v.estas ? estas(*v.estas) : json(nullptr)},
+        {"esa", v.esa ? esa(*v.esa) : json(nullptr)},
         {"ammessi", ammessi},
         {"debug",
          {{"lunghezzaRegistro", v.lunghezza_registro},
@@ -110,6 +146,7 @@ json a_json(const VistaPubblico& v) {
         {"riquadro", {{"visibile", v.riquadro_visibile}, {"testo", v.riquadro_testo}}},
         {"modalita", v.modalita ? modalita(*v.modalita) : json(nullptr)},
         {"estas", v.estas ? estas(*v.estas) : json(nullptr)},
+        {"esa", v.esa ? esa(*v.esa) : json(nullptr)},
     };
 }
 

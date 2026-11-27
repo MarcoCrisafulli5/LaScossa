@@ -22,6 +22,8 @@ evento senza gestirlo in ogni `switch` blocca la build.
 | `core/include/lascossa/esito.hpp` | `Esito` (accettato o rifiutato con motivo), `Traccia` delle transizioni |
 | `core/include/lascossa/ciclo_domanda.hpp` | Ciclo comune di una domanda a scelta |
 | `core/include/lascossa/estas.hpp` | Modalità 1, Estas o non Estas |
+| `core/include/lascossa/esa.hpp` | Modalità 2, ESA |
+| `core/include/lascossa/timer.hpp` | `TimerGioco`: timer di gioco senza orologio (l'ora arriva dagli eventi) |
 | `core/include/lascossa/serata.hpp` | Macchina della serata, contiene la modalità attiva |
 | `core/include/lascossa/partita.hpp` | Punto d'ingresso: registro eventi, annulla, replay |
 | `core/include/lascossa/viste.hpp` | Proiezioni `VistaPlancia` / `VistaPubblico` ed eventi ammessi |
@@ -46,8 +48,23 @@ la plancia vede già l'oggetto in arrivo (`prossimo_oggetto()`). L'oggetto si co
 cambiare categoria durante l'attesa non lo brucia.
 Cambio categoria possibile a ogni oggetto, solo a esito dato o in attesa; una categoria ripresa continua dall'oggetto successivo.
 
+**ESA**: `AttesaFrase` → (`MOSTRA_DOMANDA`) `InGioco` → `Indovinata` (`CONFERMA_GIUSTA`) / `Rivelata` (`RIVELA`) /
+`Scaduta` (`TIMER_SCADUTO`) → (`PROSSIMA_DOMANDA`) `AttesaFrase` … → `Finita`.
+`MOSTRA_DOMANDA` avvia il timer: prima 3 indizi da `lettura_indizio_ms`, poi il conto alla rovescia di
+`timer_risposta_ms`. Indizi e conto alla rovescia usano lo stesso timer, così la pausa generale ferma entrambi.
+`CONFERMA_SBAGLIATA` è rifiutato (si riprova finché c'è tempo); da `Scaduta` il conduttore può ancora dare la
+risposta per giusta, se è arrivata allo scadere. Niente turni.
+
+**Timer di gioco** (`TimerGioco`): `Spento` → `Corre` ⇄ `InPausa` → `Fermo` (esito prima della scadenza) o
+`Scaduto` (`TIMER_SCADUTO`). La modalità lo espone con `prossima_scadenza()`, `pausa_timer()`, `riprendi_timer()`;
+la serata lo congela con la pausa generale. `TIMER_SCADUTO` lo inserisce il server (`Regia::scadenza`) all'ora
+giusta: è un evento registrato come gli altri, quindi il replay è identico.
+
 **Partita**: applica gli eventi alla serata, scrive nel registro solo quelli accettati, tiene i rifiutati per il debug.
 `Annulla` ricostruisce lo stato rigiocando il registro senza l'ultimo evento (10.000 eventi: sotto 1 ms in Release).
+Se dopo il replay un timer di gioco corre, la serata va in pausa generale (`PAUSA_GENERALE` con `arg = kPausaAutomatica`)
+e il timer resta al valore del momento annullato; un Annulla successivo salta queste pause automatiche.
+La ripresa dopo un crash fa lo stesso (nella `Regia`), fermando il timer all'ultimo evento registrato.
 
 ## Viste
 
@@ -74,5 +91,5 @@ elencano tutti i valori degli enum (un test verifica che siano completi).
 
 ## Prossimi passi
 
-Servizio timer (dopo l'analisi di RC-05), altre modalità (vedi lo skill `.claude/skills/nuova-modalita`),
+Timer liberi della plancia (RC-05), altre modalità (vedi lo skill `.claude/skills/nuova-modalita`),
 schema JSON con generatore dei tipi C++ e TypeScript.

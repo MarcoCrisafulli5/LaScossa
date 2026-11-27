@@ -108,6 +108,7 @@ Esito Estas::su_scelta_categoria(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -145,6 +146,7 @@ Esito Estas::su_attesa_oggetto(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -195,6 +197,7 @@ Esito Estas::su_oggetto_in_gioco(const Evento& e, Traccia* t) {
         case TipoEvento::RicaricaContenuti:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);
@@ -223,6 +226,7 @@ Esito Estas::su_categoria_finita(const Evento& e, Traccia* t) {
         case TipoEvento::Rivela:
         case TipoEvento::ConfermaGiusta:
         case TipoEvento::ConfermaSbagliata:
+        case TipoEvento::TimerScaduto:
         case TipoEvento::Annulla: break;
     }
     return non_ammesso(e.tipo, stato_);

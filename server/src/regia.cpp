@@ -66,6 +66,27 @@ void Regia::apri_partita(DatiSerata dati, bool nuova) {
                           std::to_string(letti.eventi.size()) + " eventi)");
     }
     registro_.emplace(RegistroSuFile::riprendi(*ultimo, letti.eventi.size()));
+
+    // Un timer di gioco che correva al momento del crash scadrebbe subito per il tempo passato:
+    // si riprende in pausa generale, con il timer fermo all'ultimo evento registrato.
+    if (partita_->serata().prossima_scadenza() && !letti.eventi.empty()) {
+        const Evento pausa{TipoEvento::PausaGenerale, kPausaAutomatica, letti.eventi.back().t_ms};
+        const std::string da = stato_corrente();
+        if (partita_->applica(pausa)) {
+            registro_->aggiungi(pausa, da);
+            avvisi_.push_back("un timer di gioco correva: la partita riprende in pausa generale");
+        }
+    }
+}
+
+std::vector<Uscita> Regia::scadenza(std::int64_t ora) {
+    const auto quando = prossima_scadenza();
+    if (!quando || ora < *quando) return {};
+    const Evento e{TipoEvento::TimerScaduto, -1, ora};
+    const std::string da = stato_corrente();
+    if (!partita_->applica(e)) return {};
+    registro_->aggiungi(e, da);  // prima il registro, poi gli schermi
+    return a_tutti(ora);
 }
 
 void Regia::connesso(IdClient c) { client_[c] = Ruolo::Nessuno; }
@@ -121,9 +142,11 @@ std::vector<Uscita> Regia::su_evento(IdClient c, const json& m, std::int64_t ora
 
     const auto tipo = tipo_da_nome(nome_evento);
     if (!tipo) return {{c, reject(id, "evento sconosciuto: \"" + nome_evento + "\"")}};
+    if (*tipo == TipoEvento::TimerScaduto) return {{c, reject(id, "TIMER_SCADUTO lo genera solo il server")}};
 
     Evento e{*tipo};
     e.arg = m.contains("arg") && m["arg"].is_number_integer() ? m["arg"].get<int>() : -1;
+    if (*tipo == TipoEvento::PausaGenerale) e.arg = -1;  // kPausaAutomatica la mette solo il sistema
     e.t_ms = ora;
     e.testo = m.contains("testo") && m["testo"].is_string() ? m["testo"].get<std::string>() : std::string();
     if (e.testo.size() > kMassimoTestoRiquadro) {

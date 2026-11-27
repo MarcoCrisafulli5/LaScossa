@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "lascossa/esa.hpp"
 #include "lascossa/esito.hpp"
 #include "lascossa/estas.hpp"
 #include "lascossa/modalita.hpp"
@@ -21,13 +22,21 @@ struct ConfigEstas {
     int attesa_esito_ms = 2000;
 };
 
+// Parametri della modalità 2 (config.json: esa.tempoLetturaIndizioSec, esa.timerRispostaSec).
+struct ConfigEsa {
+    int lettura_indizio_ms = 3000;  // ogni quanto compare un indizio
+    int timer_risposta_ms = 30000;  // conto alla rovescia dopo il terzo indizio
+};
+
 struct Configurazione {
     int numero_concorrenti = 4;
     ConfigEstas estas;
+    ConfigEsa esa;
 };
 
 struct Contenuti {
     std::vector<CategoriaEstas> estas;
+    std::vector<FraseEsa> esa;
     // le altre modalità si aggiungeranno qui
 };
 
@@ -54,6 +63,8 @@ public:
     const std::string& riquadro_testo() const { return riquadro_testo_; }
     const Modalita* modalita() const { return modalita_.get(); }
     const std::vector<IdModalita>& giocate() const { return giocate_; }
+    // Quando scade il prossimo timer di gioco, se ne corre uno (nullopt in pausa generale).
+    std::optional<std::int64_t> prossima_scadenza() const;
 
     static std::string_view nome(Stato s);
 

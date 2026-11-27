@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DalClient, DalServer, NomeEvento, Ruolo, VistaDi } from "./protocollo";
+import { aggiornaOrologio } from "./orologio";
 
 const INTERVALLO_PING_MS = 5000;
 const TIMEOUT_PONG_MS = 12000;
@@ -77,11 +78,13 @@ export function useConnessione<R extends Ruolo>(ruolo: R): Connessione<VistaDi<R
         switch (m.tipo) {
           case "snapshot":
           case "update":
+            aggiornaOrologio(m.oraServer);
             setStato("connesso");
             setPinRichiesto(false);
             setVista(m.vista);
             break;
           case "pong":
+            aggiornaOrologio(m.oraServer);
             ultimoPong = Date.now();
             break;
           case "ack":

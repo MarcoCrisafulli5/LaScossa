@@ -4,6 +4,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useConnessione, type StatoConnessione } from "../connessione";
 import { ammesso, type NomeEvento, type VistaPlancia } from "../protocollo";
+import { EsaPlancia } from "./EsaPlancia";
 import { EstasPlancia } from "./EstasPlancia";
 
 const DURATA_MESSAGGIO_RIFIUTO_MS = 6000;
@@ -175,7 +176,13 @@ function InGioco({ v, invia }: { v: VistaPlancia; invia: Invia }) {
           Fine modalità
         </Pulsante>
       </div>
-      {v.estas ? <EstasPlancia v={v} e={v.estas} invia={invia} /> : <p className="tenue">Modalità senza plancia.</p>}
+      {v.estas ? (
+        <EstasPlancia v={v} e={v.estas} invia={invia} />
+      ) : v.esa ? (
+        <EsaPlancia v={v} e={v.esa} invia={invia} />
+      ) : (
+        <p className="tenue">Modalità senza plancia.</p>
+      )}
     </section>
   );
 }

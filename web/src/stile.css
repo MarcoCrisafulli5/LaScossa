@@ -16,6 +16,11 @@
   --sbagliata: #e5383b;
   --soluzione: #1fbf5b;
 
+  /* timer di gioco (RC-05) */
+  --timer: #ffd23f;
+  --timer-finale: #e5383b;     /* ultimi 5 secondi */
+  --timer-pausa: #a3a8c8;
+
   --raggio: 12px;
   --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
 }
@@ -191,3 +196,57 @@ input, textarea {
 .debug th { color: var(--testo-tenue); font-weight: 600; }
 .debug pre { white-space: pre-wrap; font-size: 12px; max-height: 50vh; overflow: auto; }
 .debug .colonne { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* ================================================================ timer di gioco */
+.barra-timer {
+  position: relative;
+  height: 2.2rem;
+  margin: 1rem 0;
+  border-radius: var(--raggio);
+  background: var(--superficie-2);
+  border: 2px solid var(--bordo);
+  overflow: hidden;
+}
+.barra-timer-pieno { position: absolute; inset: 0 auto 0 0; background: var(--timer); transition: width 0.1s linear; }
+.barra-timer.finale .barra-timer-pieno { background: var(--timer-finale); }
+.barra-timer.pausa .barra-timer-pieno { background: var(--timer-pausa); }
+.barra-timer.fermo .barra-timer-pieno,
+.barra-timer.scaduto .barra-timer-pieno { opacity: 0.4; }
+.barra-timer-secondi {
+  position: relative;
+  display: block;
+  text-align: center;
+  font-weight: 900;
+  line-height: 2.2rem;
+  color: var(--testo);
+  text-shadow: 0 0 6px #000;
+}
+
+/* ================================================================ ESA */
+.indizi-plancia { font-size: 1.3em; margin: 0.8rem 0; padding-left: 1.4em; }
+.indizi-plancia li { margin: 0.25rem 0; }
+.indizi-plancia li.sul-pubblico { font-weight: 700; }
+.esito-esa { font-weight: 800; }
+.esito-esa.indovinata { color: var(--giusta); }
+.esito-esa.scaduta { color: var(--sbagliata); }
+
+.esa-centro { display: grid; gap: 3cqw; width: 86%; justify-items: center; }
+.indizi-pubblico { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5cqw; width: 100%; }
+.indizio {
+  min-height: 9cqw;
+  display: grid;
+  place-items: center;
+  padding: 1cqw;
+  font-size: 3.4cqw;
+  font-weight: 800;
+  border-radius: 2cqw;
+  border: 0.5cqw solid var(--bordo);
+  background: var(--superficie);
+  opacity: 0.35;
+  transition: opacity 0.4s, background 0.4s;
+}
+.indizio.visibile { opacity: 1; background: var(--superficie-2); }
+.frase-pubblico { font-size: 5.2cqw; font-weight: 900; line-height: 1.1; color: var(--accento); text-wrap: balance; }
+.frase-pubblico.indovinata { color: var(--giusta); }
+.barra-pubblico.barra-timer { width: 80cqw; height: 5cqw; margin: 0; border-width: 0.4cqw; border-radius: 2cqw; }
+.barra-pubblico .barra-timer-secondi { font-size: 3.4cqw; line-height: 5cqw; }

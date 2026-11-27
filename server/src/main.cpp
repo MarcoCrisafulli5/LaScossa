@@ -20,7 +20,9 @@
 #include <map>
 #include <mutex>
 #include <optional>
+#include <stop_token>
 #include <string>
+#include <thread>
 
 #include "csv.hpp"
 #include "regia.hpp"
@@ -168,6 +170,24 @@ int main(int argc, char** argv) {
         return r;
     });
     CROW_ROUTE(app, "/<path>")([&](const std::string& percorso) { return file_web(opzioni->web, percorso); });
+
+    // Timer di gioco: ogni 50 ms si guarda se è scaduto. La Regia decide (e registra) sotto lo
+    // stesso mutex degli eventi, quindi una scadenza e un clic non si sovrappongono mai.
+    std::jthread orologio([&](std::stop_token stop) {
+        while (!stop.stop_requested()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            std::lock_guard lock(mutex);
+            const auto quando = regia->prossima_scadenza();
+            if (!quando) continue;
+            const std::int64_t ora = ora_ms();
+            if (ora < *quando) continue;
+            try {
+                consegna(regia->scadenza(ora));
+            } catch (const std::exception& e) {
+                std::cerr << "errore alla scadenza di un timer: " << e.what() << '\n';
+            }
+        }
+    });
 
     std::cout << "  plancia:  http://localhost:" << opzioni->porta << "/plancia\n"
               << "  pubblico: http://localhost:" << opzioni->porta << "/pubblico\n"

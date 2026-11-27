@@ -25,6 +25,7 @@ std::string_view nome(TipoEvento t) {
         case TipoEvento::Seleziona: return "SELEZIONA";
         case TipoEvento::Conferma: return "CONFERMA";
         case TipoEvento::PassaTurno: return "PASSA_TURNO";
+        case TipoEvento::TimerScaduto: return "TIMER_SCADUTO";
         case TipoEvento::Annulla: return "ANNULLA";
     }
     return "?";

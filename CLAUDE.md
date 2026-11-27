@@ -27,11 +27,12 @@ Regole dettagliate in `.claude/rules/` (architettura e dominio sempre; C++, web 
 
 ## Stato (aggiornare quando cambia)
 
-- Fatto: core FSM (serata, ciclo domanda, Estas, partita con registro/annulla/replay), proiezioni
+- Fatto: core FSM (serata, ciclo domanda, Estas, ESA, partita con registro/annulla/replay), timer di
+  gioco (`TimerGioco` + thread nel server, pausa generale, annulla/ripresa in pausa), proiezioni
   plancia/pubblico ed eventi ammessi, server Crow + WebSocket, CSV/config, registro `.jsonl` con
   ripresa dopo crash, plancia/pubblico/debug in React, Dockerfile.
-- Da fare: modalità 2–7, duelli come seconda partita (RC-15…20, punti aperti in sezione 5.1 dei
-  requisiti), servizio timer (RC-05, analizzato il 27/11), generatore dei tipi dallo
+- Da fare: modalità 3–7, duelli come seconda partita (RC-15…20, punti aperti in sezione 5.1 dei
+  requisiti), timer liberi della plancia (RC-05), generatore dei tipi dallo
   schema JSON, `RICARICA_CONTENUTI` a caldo, scorciatoie da tastiera, suoni, grafica definitiva.
 
 ## Comandi
@@ -62,10 +63,11 @@ node server/test/e2e.mjs 8099
 ## Struttura
 
 ```text
-core/        libreria C++ senza dipendenze: eventi, FSM (serata, ciclo_domanda, estas), partita, viste
+core/        libreria C++ senza dipendenze: eventi, FSM (serata, ciclo_domanda, estas, esa), timer, partita, viste
 server/src/  csv, dati (config + CSV), registro_file (.jsonl), json_viste, regia (protocollo), main (Crow)
 server/test/ test doctest della regia e dei dati; e2e.mjs
-web/src/     protocollo.ts (tipi dei messaggi), connessione.ts, plancia/, pubblico/, debug/
+web/src/     protocollo.ts (tipi dei messaggi), connessione.ts, orologio.ts (ora del server, timer),
+             BarraTimer.tsx, attesaEsito.ts, plancia/, pubblico/, debug/
 dati/        config.json, contenuti/*.csv, partite/ (registri, ignorati da git)
 third_party/ doctest, Crow, Asio standalone, nlohmann/json (header-only, versionati)
 VERSION      versione corrente (SemVer); CHANGELOG.md la storia delle modifiche

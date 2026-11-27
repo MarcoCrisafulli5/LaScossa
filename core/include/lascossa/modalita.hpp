@@ -2,7 +2,9 @@
 // e le passa gli eventi che non gestisce lei stessa.
 #pragma once
 
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include "lascossa/esito.hpp"
@@ -19,6 +21,13 @@ public:
     // Copia profonda: serve a provare un evento su una copia della serata
     // (eventi ammessi in plancia) senza toccare la partita vera.
     virtual std::unique_ptr<Modalita> clona() const = 0;
+
+    // Timer di gioco della modalità (TimerGioco). Chi non ne ha eredita questi default.
+    // La pausa generale li congela e li fa ripartire; il server programma TIMER_SCADUTO
+    // all'ora restituita da prossima_scadenza().
+    virtual void pausa_timer(std::int64_t /*ora*/) {}
+    virtual void riprendi_timer(std::int64_t /*ora*/) {}
+    virtual std::optional<std::int64_t> prossima_scadenza() const { return std::nullopt; }
 
 protected:
     Modalita() = default;

@@ -19,6 +19,7 @@ option(LASCOSSA_SERVER "Compila anche il server (Crow, nlohmann/json)" ON)
 add_library(lascossa_core
     core/src/eventi.cpp
     core/src/ciclo_domanda.cpp
+    core/src/esa.cpp
     core/src/estas.cpp
     core/src/serata.cpp
     core/src/partita.cpp
@@ -31,6 +32,7 @@ enable_testing()
 add_executable(lascossa_test
     core/test/main.cpp
     core/test/test_ciclo_domanda.cpp
+    core/test/test_esa.cpp
     core/test/test_estas.cpp
     core/test/test_serata_partita.cpp
     core/test/test_viste.cpp

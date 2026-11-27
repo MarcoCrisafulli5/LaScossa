@@ -191,3 +191,68 @@ TEST_CASE("messaggi malformati e ping") {
     CHECK(pong[0]["tipo"] == "pong");
     CHECK(pong[0]["oraServer"] == 77);
 }
+
+namespace {
+// ESA con tempi brevi: 3 indizi da 1 s, poi 2 s di risposta -> scade 5 s dopo MOSTRA_DOMANDA.
+void prepara_esa(const test::CartellaTemporanea& d) {
+    prepara(d, R"({"concorrenti":{"numero":3},"esa":{"tempoLetturaIndizioSec":1,"timerRispostaSec":2}})");
+    d.scrivi("contenuti/mod2_esa.csv",
+             "indizio1;indizio2;indizio3;soluzione\nRoma;Cesare;Rubicone;Il dado è tratto\n");
+}
+}  // namespace
+
+TEST_CASE("ESA: TIMER_SCADUTO lo genera il server; la frase arriva al pubblico solo dopo") {
+    test::CartellaTemporanea d;
+    prepara_esa(d);
+    Sala s(d, true);
+    s.invia("AVVIA_SERATA");
+    s.invia("SCEGLI_MODALITA", static_cast<int>(IdModalita::Esa));
+    auto out = s.regia.messaggio(kPlancia, evento("m", "MOSTRA_DOMANDA"), 1000);
+    REQUIRE(per(out, kPubblico).size() == 1);
+    const json pubblico = per(out, kPubblico)[0]["vista"]["esa"];
+    CHECK(pubblico["indizi"].size() == 3);
+    CHECK(pubblico["timer"]["stato"] == "corre");
+    CHECK(pubblico["timer"]["scadenzaMs"] == 6000);
+    CHECK(per(out, kPubblico)[0].dump().find("dado") == std::string::npos);  // la soluzione non c'è
+
+    // la plancia non può far scadere il timer
+    auto r = per(s.invia("TIMER_SCADUTO"), kPlancia);
+    REQUIRE_FALSE(r.empty());
+    CHECK(r[0]["tipo"] == "reject");
+
+    REQUIRE(s.regia.prossima_scadenza().has_value());
+    CHECK(*s.regia.prossima_scadenza() == 6000);
+    CHECK(s.regia.scadenza(5999).empty());  // non ancora
+
+    out = s.regia.scadenza(6000);
+    REQUIRE(per(out, kPubblico).size() == 1);
+    CHECK(per(out, kPubblico)[0]["vista"]["esa"]["stato"] == "Scaduta");
+    CHECK(per(out, kPubblico)[0]["vista"]["esa"]["frase"] == "Il dado è tratto");
+    CHECK(s.regia.partita().registro().back().tipo == TipoEvento::TimerScaduto);
+    CHECK_FALSE(s.regia.prossima_scadenza().has_value());
+    CHECK(s.regia.scadenza(9000).empty());  // una volta sola
+}
+
+TEST_CASE("ESA: ripresa dopo un crash con un timer che correva -> pausa generale") {
+    test::CartellaTemporanea d;
+    prepara_esa(d);
+    {
+        Sala s(d, true);
+        s.invia("AVVIA_SERATA");
+        s.invia("SCEGLI_MODALITA", static_cast<int>(IdModalita::Esa));
+        s.regia.messaggio(kPlancia, evento("m", "MOSTRA_DOMANDA"), 1000);
+    }  // crash
+
+    Regia r(d.percorso(), false);
+    CHECK(r.partita().serata().in_pausa());
+    CHECK_FALSE(r.prossima_scadenza().has_value());
+    CHECK(r.partita().registro().back().arg == kPausaAutomatica);
+    bool avvisato = false;
+    for (const auto& a : r.avvisi()) avvisato = avvisato || a.find("pausa generale") != std::string::npos;
+    CHECK(avvisato);
+
+    // la pausa automatica è nel registro: un'altra ripresa ritrova lo stesso stato, senza doppioni
+    Regia r2(d.percorso(), false);
+    CHECK(r2.partita().serata().in_pausa());
+    CHECK(r2.partita().registro().size() == r.partita().registro().size());
+}

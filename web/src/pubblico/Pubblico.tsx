@@ -3,8 +3,10 @@
 
 import { useEffect } from "react";
 import { useAttesaEsito } from "../attesaEsito";
+import { BarraTimer } from "../BarraTimer";
 import { useConnessione } from "../connessione";
-import type { EstasPubblico } from "../protocollo";
+import { trascorso, useOraServer } from "../orologio";
+import type { EsaPubblico, EstasPubblico } from "../protocollo";
 
 export function Pubblico() {
   const { vista } = useConnessione("pubblico");
@@ -27,7 +29,13 @@ export function Pubblico() {
   return (
     <div className="pubblico">
       <div className="palco">
-        {vista.estas ? <Estas e={vista.estas} /> : <div className="logo">LA SCOSSA</div>}
+        {vista.estas ? (
+          <Estas e={vista.estas} />
+        ) : vista.esa ? (
+          <Esa e={vista.esa} />
+        ) : (
+          <div className="logo">LA SCOSSA</div>
+        )}
         {vista.riquadro.visibile && vista.riquadro.testo && (
           <div className="riquadro-pubblico">{vista.riquadro.testo}</div>
         )}
@@ -62,6 +70,35 @@ function Estas({ e }: { e: EstasPubblico }) {
       ) : (
         <div />
       )}
+    </>
+  );
+}
+
+function Esa({ e }: { e: EsaPubblico }) {
+  const ora = useOraServer(e.timer.stato === "corre");
+  if (e.stato === "AttesaFrase" || e.stato === "Finita" || e.indizi.length === 0) {
+    return <div className="categoria-sola">ESA</div>;
+  }
+  // Gli indizi compaiono uno ogni letturaIndizioMs seguendo il timer (si fermano con la pausa);
+  // a frase conclusa si vedono tutti.
+  const visibili =
+    e.stato === "InGioco"
+      ? Math.min(e.indizi.length, Math.floor(trascorso(e.timer, ora) / e.letturaIndizioMs) + 1)
+      : e.indizi.length;
+  return (
+    <>
+      <div className="categoria-pubblico">{e.stato === "Scaduta" ? "Tempo scaduto" : "ESA"}</div>
+      <div className="esa-centro">
+        <div className="indizi-pubblico">
+          {e.indizi.map((indizio, i) => (
+            <div key={i} className={`indizio${i < visibili ? " visibile" : ""}`}>
+              {i < visibili ? indizio : ""}
+            </div>
+          ))}
+        </div>
+        {e.frase && <div className={`frase-pubblico ${e.stato.toLowerCase()}`}>{e.frase}</div>}
+      </div>
+      <BarraTimer t={e.timer} ora={ora} classe="barra-pubblico" />
     </>
   );
 }

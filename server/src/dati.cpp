@@ -1,6 +1,7 @@
 #include "dati.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <fstream>
 #include <map>
@@ -15,6 +16,18 @@ namespace {
 constexpr std::size_t kMinimoOggettiPerCategoria = 11;  // regole: "più di 10 oggetti per categoria"
 constexpr int kMassimoConcorrenti = 20;
 constexpr int kMassimaAttesaEsitoMs = 10000;  // oltre 10 s la suspense blocca la plancia troppo a lungo
+constexpr int kMassimoSecondi = 600;           // limite per i tempi in secondi della config
+
+// Legge sezione.chiave in secondi interi (1..kMassimoSecondi) e lo restituisce in ms; se manca, `ms`.
+void secondi(const nlohmann::json& j, const char* sezione, const char* chiave, int& ms) {
+    if (!j.contains(sezione) || !j[sezione].is_object() || !j[sezione].contains(chiave)) return;
+    const auto& v = j[sezione][chiave];
+    if (!v.is_number_integer() || v.get<int>() < 1 || v.get<int>() > kMassimoSecondi) {
+        throw ErroreDati(std::string("config.json: ") + sezione + "." + chiave + " deve essere un intero tra 1 e " +
+                         std::to_string(kMassimoSecondi) + " (secondi)");
+    }
+    ms = v.get<int>() * 1000;
+}
 
 std::string minuscolo(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
@@ -65,6 +78,8 @@ void leggi_config(std::string_view testo, Configurazione& cfg, Impostazioni& imp
         }
         cfg.estas.attesa_esito_ms = a.get<int>();
     }
+    secondi(j, "esa", "tempoLetturaIndizioSec", cfg.esa.lettura_indizio_ms);
+    secondi(j, "esa", "timerRispostaSec", cfg.esa.timer_risposta_ms);
     if (j.contains("plancia") && j["plancia"].contains("pin")) {
         const auto& pin = j["plancia"]["pin"];
         if (pin.is_null()) {
@@ -120,6 +135,31 @@ std::vector<CategoriaEstas> leggi_estas(const TabellaCsv& t, std::string_view no
     return categorie;
 }
 
+std::vector<FraseEsa> leggi_esa(const TabellaCsv& t, std::string_view nome_file, std::vector<std::string>& avvisi) {
+    const std::array<std::size_t, kIndiziEsa> c_ind = {
+        t.colonna("indizio1", nome_file), t.colonna("indizio2", nome_file), t.colonna("indizio3", nome_file)};
+    const std::size_t c_sol = t.colonna("soluzione", nome_file);
+
+    std::vector<FraseEsa> frasi;
+    for (const RigaCsv& r : t.righe) {
+        const auto campo = [&](std::size_t c) { return c < r.campi.size() ? r.campi[c] : std::string(); };
+        FraseEsa f;
+        for (std::size_t i = 0; i < kIndiziEsa; ++i) {
+            f.indizi[i] = campo(c_ind[i]);
+            if (f.indizi[i].empty()) {
+                throw ErroreDati(posizione(nome_file, r.numero) + "indizio" + std::to_string(i + 1) + " vuoto");
+            }
+        }
+        f.soluzione = campo(c_sol);
+        if (f.soluzione.empty()) throw ErroreDati(posizione(nome_file, r.numero) + "soluzione vuota");
+        if (std::any_of(frasi.begin(), frasi.end(), [&](const FraseEsa& x) { return x.soluzione == f.soluzione; })) {
+            avvisi.push_back(posizione(nome_file, r.numero) + "frase \"" + f.soluzione + "\" ripetuta");
+        }
+        frasi.push_back(std::move(f));
+    }
+    return frasi;
+}
+
 DatiSerata carica_dati(const std::filesystem::path& cartella) {
     DatiSerata d;
     const auto config = cartella / "config.json";
@@ -136,6 +176,12 @@ DatiSerata carica_dati(const std::filesystem::path& cartella) {
     if (d.contenuti.estas.empty()) {
         throw ErroreDati("mod1_estas.csv: nessuna categoria");
     }
+
+    const auto esa = cartella / "contenuti" / "mod2_esa.csv";
+    if (std::filesystem::exists(esa)) {
+        d.contenuti.esa = leggi_esa(leggi_csv(leggi_file(esa), "mod2_esa.csv"), "mod2_esa.csv", d.avvisi);
+    }
+    if (d.contenuti.esa.empty()) d.avvisi.push_back("mod2_esa.csv: nessuna frase, ESA non si può giocare");
     return d;
 }
 

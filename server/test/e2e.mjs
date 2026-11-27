@@ -55,7 +55,7 @@ verifica(pubblico.vista?.modalita === null, "pubblico: schermata di attesa");
 
 let r = await invia(plancia, "AVVIA_SERATA");
 verifica(r.tipo === "ack" && r.ms < 500, `AVVIA_SERATA ack in ${r.ms.toFixed(1)} ms (requisito RC-01: < 500 ms)`);
-r = await invia(plancia, "SCEGLI_MODALITA", 1);
+r = await invia(plancia, "SCEGLI_MODALITA", 2);  // Date: non ancora implementata
 verifica(r.tipo === "reject", `modalità non implementata rifiutata: "${r.motivo}"`);
 await invia(plancia, "SCEGLI_MODALITA", 0);
 const cat = plancia.vista.estas.categorie.length - 1;
@@ -106,6 +106,30 @@ verifica(r.tipo === "reject", `in pausa gli eventi di gioco sono rifiutati: "${r
 await invia(plancia, "RIPRENDI_GENERALE");
 r = await invia(plancia, "NUOVA_PARTITA");
 verifica(r.tipo === "reject", "nuova partita rifiutata durante il gioco");
+
+// --- ESA: indizi e timer di gioco del server; la frase al pubblico solo dopo
+await invia(plancia, "FINE_MODALITA");
+r = await invia(plancia, "SCEGLI_MODALITA", 1);
+verifica(r.tipo === "ack" && pubblico.vista.esa?.stato === "AttesaFrase", "ESA: in attesa il pubblico vede solo il titolo");
+const soluzioneEsa = plancia.vista.esa.anteprima.soluzione;
+verifica(pubblico.vista.esa.indizi.length === 0, "ESA: in attesa nessun indizio al pubblico");
+r = await invia(plancia, "MOSTRA_DOMANDA");
+const t = pubblico.vista.esa.timer;
+const oraMostra = pubblico.ricevuti.at(-1).oraServer;
+verifica(pubblico.vista.esa.indizi.length === 3 && t.stato === "corre", "ESA: tre indizi e timer che corre");
+verifica(t.scadenzaMs - oraMostra === t.totaleMs && t.totaleMs - t.durataMs === 3 * pubblico.vista.esa.letturaIndizioMs,
+  `ESA: il conto alla rovescia (${t.durataMs / 1000} s) parte dopo i 3 indizi`);
+verifica(!JSON.stringify(pubblico.ricevuti).includes(soluzioneEsa), "ESA: la frase non arriva al pubblico prima del tempo");
+r = await invia(plancia, "TIMER_SCADUTO");
+verifica(r.tipo === "reject", `ESA: la plancia non può far scadere il timer: "${r.motivo}"`);
+r = await invia(plancia, "CONFERMA_SBAGLIATA");
+verifica(r.tipo === "reject", "ESA: una risposta sbagliata non chiude la frase");
+await invia(plancia, "PAUSA_GENERALE");
+verifica(pubblico.vista.esa.timer.stato === "pausa", "ESA: la pausa generale ferma il timer");
+await invia(plancia, "RIPRENDI_GENERALE");
+await invia(plancia, "RIVELA");
+verifica(pubblico.vista.esa.frase === soluzioneEsa && pubblico.vista.esa.timer.stato === "fermo",
+  "ESA: rivela mostra la frase e ferma il timer");
 
 plancia.ws.send(JSON.stringify({ tipo: "ping" }));
 await attendi(100);

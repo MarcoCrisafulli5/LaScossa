@@ -34,6 +34,7 @@ enum class TipoEvento : std::uint8_t {
     ConfermaSbagliata,
     Rivela,            // mostra la soluzione senza risposta del concorrente
     PassaTurno,
+    TimerScaduto,      // solo dal server: è scaduto il timer di gioco della modalità attiva
     // --- gestito dalla Partita, non dalle macchine ---
     Annulla,
 };
@@ -66,7 +67,7 @@ inline constexpr std::array kTuttiGliEventi = {
     TipoEvento::ScegliCategoria,  TipoEvento::MostraDomanda,    TipoEvento::ProssimaDomanda,
     TipoEvento::Seleziona,        TipoEvento::Conferma,         TipoEvento::ConfermaGiusta,
     TipoEvento::ConfermaSbagliata, TipoEvento::Rivela,          TipoEvento::PassaTurno,
-    TipoEvento::Annulla,
+    TipoEvento::TimerScaduto,     TipoEvento::Annulla,
 };
 
 inline constexpr std::array kTutteLeModalita = {
