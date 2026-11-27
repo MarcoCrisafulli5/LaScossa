@@ -104,6 +104,8 @@ input, textarea {
 .categorie { display: grid; gap: 0.5rem; }
 .categorie button { text-align: left; display: flex; justify-content: space-between; gap: 0.5em; }
 .oggetto { font-size: 2.6em; font-weight: 800; margin: 0.2em 0; }
+.anteprima-oggetto { font-size: 2.2em; font-weight: 800; margin: 0.2em 0; color: var(--testo-tenue); }
+.anteprima-oggetto .tenue { font-size: 0.5em; font-weight: 600; }
 .soluzione-plancia { display: inline-block; padding: 0.3em 0.8em; border-radius: 999px; font-weight: 700; background: var(--superficie-2); border: 2px solid var(--giusta); }
 .opzioni-plancia { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1rem 0; }
 .opzioni-plancia button { font-size: 1.5em; padding: 1em; position: relative; }
@@ -141,6 +143,17 @@ input, textarea {
 .logo { font-size: 11cqw; font-weight: 900; color: var(--accento); letter-spacing: 0.04em; text-shadow: 0 0 4cqw rgba(255, 210, 63, 0.35); grid-row: 1 / -1; }
 .palco.nero .logo { font-size: 4cqw; opacity: 0.25; }
 .categoria-pubblico { font-size: 3.6cqw; font-weight: 700; color: var(--accento); text-transform: uppercase; letter-spacing: 0.05em; }
+.categoria-sola {
+  grid-row: 1 / -1;
+  font-size: 7cqw;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--accento);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 6cqw;
+  text-wrap: balance;
+}
 .oggetto-pubblico { font-size: 7.5cqw; font-weight: 900; line-height: 1.1; padding: 0 4cqw; }
 .opzioni-pubblico { display: grid; grid-template-columns: 1fr 1fr; gap: 4cqw; width: 80%; }
 .opzioni-pubblico .opzione {

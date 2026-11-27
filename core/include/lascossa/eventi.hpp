@@ -26,6 +26,7 @@ enum class TipoEvento : std::uint8_t {
     RicaricaContenuti, // solo fuori dal gioco: il server rilegge i CSV
     // --- livello modalità / domanda ---
     ScegliCategoria,   // arg = indice categoria (o round)
+    MostraDomanda,     // rivela al pubblico la domanda/oggetto preparato (finora solo il contesto)
     ProssimaDomanda,
     Seleziona,         // arg = indice opzione scelta dal concorrente
     Conferma,          // modalità a scelta: la macchina confronta con la soluzione -> verde o rosso
@@ -62,9 +63,10 @@ inline constexpr std::array kTuttiGliEventi = {
     TipoEvento::ChiudiSerata,     TipoEvento::PausaGenerale,    TipoEvento::RiprendiGenerale,
     TipoEvento::BlackoutOn,       TipoEvento::BlackoutOff,      TipoEvento::MostraRiquadro,
     TipoEvento::NascondiRiquadro, TipoEvento::AggiornaRiquadro, TipoEvento::RicaricaContenuti,
-    TipoEvento::ScegliCategoria,  TipoEvento::ProssimaDomanda,  TipoEvento::Seleziona,
-    TipoEvento::Conferma,         TipoEvento::ConfermaGiusta,   TipoEvento::ConfermaSbagliata,
-    TipoEvento::Rivela,           TipoEvento::PassaTurno,       TipoEvento::Annulla,
+    TipoEvento::ScegliCategoria,  TipoEvento::MostraDomanda,    TipoEvento::ProssimaDomanda,
+    TipoEvento::Seleziona,        TipoEvento::Conferma,         TipoEvento::ConfermaGiusta,
+    TipoEvento::ConfermaSbagliata, TipoEvento::Rivela,          TipoEvento::PassaTurno,
+    TipoEvento::Annulla,
 };
 
 inline constexpr std::array kTutteLeModalita = {

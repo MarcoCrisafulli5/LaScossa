@@ -25,8 +25,12 @@ Colori in `web/src/stile.css` (variabili CSS), non nel codice dei componenti.
 
 ## Modalità implementate
 
-- **1. Estas o non Estas**: categoria → oggetti; opzione 0 = Estas, 1 = Non Estas. Cambio categoria
-  solo a oggetto concluso; una categoria ripresa continua dall'oggetto successivo.
+- **1. Estas o non Estas**: categoria → oggetti; opzione 0 = Estas, 1 = Non Estas. Prima di ogni
+  oggetto c'è `AttesaOggetto` (25/11): il pubblico vede solo la categoria, la plancia vede l'oggetto in
+  arrivo, `MOSTRA_DOMANDA` lo rivela. Cambio categoria solo a oggetto concluso o in attesa; una
+  categoria ripresa continua dall'oggetto successivo.
+- `MOSTRA_DOMANDA` è generico: usalo anche nelle altre modalità quando serve una pausa tra il
+  contesto (round, materia, date) e la domanda.
 - Le altre 7 sono nell'enum `IdModalita` ma `Serata::disponibile()` restituisce false.
 
 ## Ipotesi da confermare con l'utente (non trasformarle in certezze)

@@ -31,6 +31,8 @@ json estas(const EstasPlancia& e) {
         {"categoriaCorrente", e.categoria_corrente},
         {"oggetto", e.oggetto ? json(*e.oggetto) : json(nullptr)},
         {"oggettoAppartiene", e.oggetto_appartiene ? json(*e.oggetto_appartiene) : json(nullptr)},
+        {"anteprima", e.anteprima ? json(*e.anteprima) : json(nullptr)},
+        {"anteprimaAppartiene", e.anteprima_appartiene ? json(*e.anteprima_appartiene) : json(nullptr)},
         {"statoDomanda", e.stato_domanda},
         {"domandaConclusa", e.domanda_conclusa},
         {"opzioni", opzioni},
@@ -44,7 +46,7 @@ json estas(const EstasPubblico& e) {
     for (const auto& o : e.opzioni) {
         opzioni.push_back({{"etichetta", o.etichetta}, {"stato", s(nome(o.stato))}});
     }
-    return {{"categoria", e.categoria}, {"oggetto", e.oggetto}, {"opzioni", opzioni}};
+    return {{"stato", e.stato}, {"categoria", e.categoria}, {"oggetto", e.oggetto}, {"opzioni", opzioni}};
 }
 
 }  // namespace

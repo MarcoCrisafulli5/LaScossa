@@ -36,6 +36,29 @@ export function EstasPlancia({ v, e, invia }: { v: VistaPlancia; e: Estas; invia
             Categoria <b>{e.categorie[e.categoriaCorrente]?.nome}</b> finita: scegline un'altra.
           </p>
         )}
+        {e.stato === "AttesaOggetto" && (
+          <>
+            <p className="tenue" style={{ margin: 0 }}>
+              {e.categorie[e.categoriaCorrente]?.nome} · oggetto {(e.categorie[e.categoriaCorrente]?.giocati ?? 0) + 1} di{" "}
+              {e.categorie[e.categoriaCorrente]?.totale} · <b>il pubblico vede solo la categoria</b>
+            </p>
+            <div className="anteprima-oggetto">
+              <span className="tenue">In arrivo:</span> {e.anteprima}
+            </div>
+            <span className="soluzione-plancia">Soluzione: {e.anteprimaAppartiene ? "ESTAS" : "NON ESTAS"}</span>
+            <div className="azioni" style={{ marginTop: "1.2rem" }}>
+              <button className="primario" disabled={!ammesso(v, "MOSTRA_DOMANDA")} onClick={() => invia("MOSTRA_DOMANDA")}>
+                Mostra oggetto
+              </button>
+              <button disabled={!ammesso(v, "PASSA_TURNO")} onClick={() => invia("PASSA_TURNO")}>
+                Passa turno
+              </button>
+            </div>
+            <p className="turno">
+              Di turno: concorrente <b>{e.concorrenteDiTurno + 1}</b> di {e.numeroConcorrenti}
+            </p>
+          </>
+        )}
         {e.oggetto !== null && (
           <>
             <p className="tenue" style={{ margin: 0 }}>
@@ -82,7 +105,7 @@ export function EstasPlancia({ v, e, invia }: { v: VistaPlancia; e: Estas; invia
                     Rivela soluzione
                   </button>
                   <button disabled={!ammesso(v, "PROSSIMA_DOMANDA")} onClick={() => invia("PROSSIMA_DOMANDA")}>
-                    Prossimo oggetto
+                    Prossimo oggetto (prima la categoria)
                   </button>
                 </div>
               </div>

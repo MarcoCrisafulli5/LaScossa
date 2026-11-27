@@ -18,6 +18,7 @@ export type NomeEvento =
   | "AGGIORNA_RIQUADRO"
   | "RICARICA_CONTENUTI"
   | "SCEGLI_CATEGORIA"
+  | "MOSTRA_DOMANDA"
   | "PROSSIMA_DOMANDA"
   | "SELEZIONA"
   | "CONFERMA"
@@ -43,7 +44,10 @@ export interface Riquadro {
 
 // ------------------------------------------------------------------ pubblico
 
+export type StatoEstas = "SceltaCategoria" | "AttesaOggetto" | "OggettoInGioco" | "CategoriaFinita";
+
 export interface EstasPubblico {
+  stato: StatoEstas;
   categoria: string;
   oggetto: string;
   opzioni: { etichetta: string; stato: StatoOpzione }[];
@@ -64,11 +68,13 @@ export interface EventoAmmesso {
 }
 
 export interface EstasPlancia {
-  stato: "SceltaCategoria" | "OggettoInGioco" | "CategoriaFinita";
+  stato: StatoEstas;
   categorie: { nome: string; totale: number; giocati: number }[];
   categoriaCorrente: number;
   oggetto: string | null;
   oggettoAppartiene: boolean | null;
+  anteprima: string | null;
+  anteprimaAppartiene: boolean | null;
   statoDomanda: "" | "Mostrata" | "Selezionata" | "Giusta" | "Sbagliata" | "Rivelata";
   domandaConclusa: boolean;
   opzioni: { etichetta: string; stato: StatoOpzione; corretta: boolean }[];

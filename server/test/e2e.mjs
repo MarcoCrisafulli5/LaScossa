@@ -60,6 +60,14 @@ verifica(r.tipo === "reject", `modalità non implementata rifiutata: "${r.motivo
 await invia(plancia, "SCEGLI_MODALITA", 0);
 const cat = plancia.vista.estas.categorie.length - 1;
 await invia(plancia, "SCEGLI_CATEGORIA", cat);
+const inArrivo = plancia.vista.estas.anteprima;
+verifica(
+  pubblico.vista.estas.stato === "AttesaOggetto" && pubblico.vista.estas.oggetto === "" && pubblico.vista.estas.categoria !== "",
+  "attesa: il pubblico vede solo la categoria",
+);
+verifica(typeof inArrivo === "string" && !JSON.stringify(pubblico.ricevuti).includes(`"${inArrivo}"`),
+  `attesa: "${inArrivo}" è in anteprima in plancia ma non arriva al pubblico`);
+await invia(plancia, "MOSTRA_DOMANDA");
 const oggetto = plancia.vista.estas.oggetto;
 const giusta = plancia.vista.estas.oggettoAppartiene ? 0 : 1;
 const sbagliata = 1 - giusta;
@@ -78,6 +86,8 @@ await invia(plancia, "SELEZIONA", giusta);
 await invia(plancia, "CONFERMA");
 verifica(pubblico.vista.estas.opzioni[giusta].stato === "giusta", "risposta giusta in verde");
 await invia(plancia, "PROSSIMA_DOMANDA");
+verifica(pubblico.vista.estas.stato === "AttesaOggetto", "prossimo oggetto: prima di nuovo solo la categoria");
+await invia(plancia, "MOSTRA_DOMANDA");
 await invia(plancia, "RIVELA");
 verifica(pubblico.vista.estas.opzioni.some((o) => o.stato === "soluzione"), "rivela mostra la soluzione");
 

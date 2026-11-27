@@ -46,6 +46,7 @@ TEST_CASE("elenchi completi di eventi e modalità, conversione da nome") {
 TEST_CASE("la copia della serata è profonda: provare un evento non tocca l'originale") {
     Partita p = in_gioco_estas();
     REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));
     Serata copia(p.serata());
     CHECK(copia.gestisci(ev(TipoEvento::Seleziona, Estas::kEstas), nullptr));
     const auto* originale = dynamic_cast<const Estas*>(p.serata().modalita());
@@ -74,7 +75,17 @@ TEST_CASE("eventi ammessi seguono lo stato e non modificano la partita") {
     CHECK_FALSE(ammesso(a, TipoEvento::Seleziona, 0));
 
     REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    a = eventi_ammessi(p);  // attesa: solo la categoria a schermo
+    CHECK(ammesso(a, TipoEvento::MostraDomanda));
+    CHECK(ammesso(a, TipoEvento::ScegliCategoria, 1));
+    CHECK_FALSE(ammesso(a, TipoEvento::ScegliCategoria, 0));
+    CHECK(ammesso(a, TipoEvento::PassaTurno));
+    CHECK_FALSE(ammesso(a, TipoEvento::Seleziona, Estas::kEstas));
+    CHECK_FALSE(ammesso(a, TipoEvento::Rivela));
+
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));
     a = eventi_ammessi(p);
+    CHECK_FALSE(ammesso(a, TipoEvento::MostraDomanda));
     CHECK(ammesso(a, TipoEvento::Seleziona, Estas::kEstas));
     CHECK(ammesso(a, TipoEvento::Seleziona, Estas::kNonEstas));
     CHECK(ammesso(a, TipoEvento::Rivela));
@@ -103,9 +114,11 @@ TEST_CASE("pubblico: schermata di attesa fuori dal gioco") {
 
 TEST_CASE("pubblico: giallo, poi rosso sulla risposta sbagliata, senza mai mostrare la soluzione") {
     Partita p = in_gioco_estas();
-    REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));  // Arancini: Estas
+    REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));  // Arancini: Estas
 
     VistaPubblico v = vista_pubblico(p);
+    CHECK(v.estas->stato == "OggettoInGioco");
     REQUIRE(v.estas.has_value());
     CHECK(v.estas->categoria == "Piatti tipici regionali");
     CHECK(v.estas->oggetto == "Arancini");
@@ -127,20 +140,47 @@ TEST_CASE("pubblico: giallo, poi rosso sulla risposta sbagliata, senza mai mostr
 TEST_CASE("pubblico: verde sulla giusta, soluzione solo dopo Rivela") {
     Partita p = in_gioco_estas();
     REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));
     REQUIRE(p.applica(ev(TipoEvento::Seleziona, Estas::kEstas)));
     REQUIRE(p.applica(ev(TipoEvento::Conferma)));
     CHECK(vista_pubblico(p).estas->opzioni[0].stato == StatoOpzione::Giusta);
 
-    REQUIRE(p.applica(ev(TipoEvento::ProssimaDomanda)));  // Sushi: Non Estas
+    REQUIRE(p.applica(ev(TipoEvento::ProssimaDomanda)));
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));  // Sushi: Non Estas
     REQUIRE(p.applica(ev(TipoEvento::Rivela)));
     const VistaPubblico v = vista_pubblico(p);
     CHECK(v.estas->opzioni[0].stato == StatoOpzione::Neutra);
     CHECK(v.estas->opzioni[1].stato == StatoOpzione::Soluzione);
 }
 
+TEST_CASE("attesa: il pubblico vede solo la categoria, la plancia anche l'oggetto in arrivo") {
+    Partita p = in_gioco_estas();
+    REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+
+    const VistaPubblico pub = vista_pubblico(p);
+    REQUIRE(pub.estas.has_value());
+    CHECK(pub.estas->stato == "AttesaOggetto");
+    CHECK(pub.estas->categoria == "Piatti tipici regionali");
+    CHECK(pub.estas->oggetto.empty());
+    CHECK(pub.estas->opzioni.empty());
+
+    const VistaPlancia pl = vista_plancia(p);
+    REQUIRE(pl.estas.has_value());
+    CHECK(pl.estas->stato == "AttesaOggetto");
+    CHECK_FALSE(pl.estas->oggetto.has_value());
+    CHECK(pl.estas->anteprima == "Arancini");
+    CHECK(pl.estas->anteprima_appartiene == true);
+    CHECK(pl.estas->categorie[0].giocati == 0);
+
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));
+    CHECK_FALSE(vista_plancia(p).estas->anteprima.has_value());
+    CHECK(vista_pubblico(p).estas->oggetto == "Arancini");
+}
+
 TEST_CASE("plancia: soluzione, categorie, turno e debug") {
     Partita p = in_gioco_estas();
     REQUIRE(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    REQUIRE(p.applica(ev(TipoEvento::MostraDomanda)));
     CHECK_FALSE(p.applica(ev(TipoEvento::Conferma)));  // rifiutato: niente selezione
 
     const VistaPlancia v = vista_plancia(p);
@@ -166,9 +206,9 @@ TEST_CASE("plancia: soluzione, categorie, turno e debug") {
     CHECK(v.estas->categorie[0].totale == 2);
     CHECK(v.estas->numero_concorrenti == 3);
 
-    CHECK(v.lunghezza_registro == 3);
-    REQUIRE(v.ultimi_eventi.size() == 3);
-    CHECK(v.ultimi_eventi.back().seq == 3);
+    CHECK(v.lunghezza_registro == 4);
+    REQUIRE(v.ultimi_eventi.size() == 4);
+    CHECK(v.ultimi_eventi.back().seq == 4);
     REQUIRE(v.ultimi_rifiutati.size() == 1);
     CHECK(v.ultimi_rifiutati[0].evento.tipo == TipoEvento::Conferma);
 }

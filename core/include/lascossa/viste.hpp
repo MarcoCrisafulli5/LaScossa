@@ -41,6 +41,7 @@ struct OpzionePubblico {
 };
 
 struct EstasPubblico {
+    std::string stato;      // stato della macchina Estas: decide quale schermata disegnare
     std::string categoria;  // vuota finché non si sceglie una categoria
     std::string oggetto;    // vuoto se nessun oggetto è in gioco
     std::vector<OpzionePubblico> opzioni;
@@ -85,6 +86,9 @@ struct EstasPlancia {
     int categoria_corrente = -1;
     std::optional<std::string> oggetto;
     std::optional<bool> oggetto_appartiene;
+    // In AttesaOggetto: l'oggetto che "Mostra oggetto" porterà in gioco, solo per i conduttori.
+    std::optional<std::string> anteprima;
+    std::optional<bool> anteprima_appartiene;
     std::string stato_domanda;  // vuoto se nessun oggetto è in gioco
     bool domanda_conclusa = false;
     std::vector<OpzionePlancia> opzioni;

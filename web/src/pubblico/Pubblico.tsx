@@ -36,6 +36,10 @@ export function Pubblico() {
 }
 
 function Estas({ e }: { e: EstasPubblico }) {
+  // Tra un oggetto e l'altro solo la categoria, grande: i conduttori possono spiegare regole e dubbi
+  // senza la domanda a schermo.
+  if (e.stato === "AttesaOggetto") return <div className="categoria-sola">{e.categoria}</div>;
+  if (e.stato !== "OggettoInGioco") return <div className="categoria-sola">Estas o non Estas</div>;
   return (
     <>
       <div className="categoria-pubblico">{e.categoria || "Estas o non Estas"}</div>

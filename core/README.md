@@ -39,8 +39,12 @@ In `InGioco` gli eventi di gioco scendono alla modalità attiva.
 In `Selezionata` il conduttore può cambiare selezione prima di confermare. L'esito lo decide la macchina confrontando
 con la soluzione. Con `riprova_dopo_errore` (modalità Date) l'opzione sbagliata resta rossa e si può scegliere un'altra.
 
-**Estas**: `SceltaCategoria` → `OggettoInGioco` → `CategoriaFinita`.
-Cambio categoria possibile a ogni oggetto, solo a esito dato; una categoria ripresa continua dall'oggetto successivo.
+**Estas**: `SceltaCategoria` → `AttesaOggetto` → (`MOSTRA_DOMANDA`) `OggettoInGioco` → (`PROSSIMA_DOMANDA`)
+`AttesaOggetto` … → `CategoriaFinita`.
+In `AttesaOggetto` il pubblico vede solo la categoria, così i conduttori possono soffermarsi su regole e dubbi;
+la plancia vede già l'oggetto in arrivo (`prossimo_oggetto()`). L'oggetto si consuma solo con `MOSTRA_DOMANDA`:
+cambiare categoria durante l'attesa non lo brucia.
+Cambio categoria possibile a ogni oggetto, solo a esito dato o in attesa; una categoria ripresa continua dall'oggetto successivo.
 
 **Partita**: applica gli eventi alla serata, scrive nel registro solo quelli accettati, tiene i rifiutati per il debug.
 `Annulla` ricostruisce lo stato rigiocando il registro senza l'ultimo evento (10.000 eventi: sotto 1 ms in Release).

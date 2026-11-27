@@ -81,6 +81,12 @@ TEST_CASE("partita: ack, aggiornamenti a entrambi, soluzione mai al pubblico") {
 
     s.invia("SCEGLI_MODALITA", 0);
     out = s.invia("SCEGLI_CATEGORIA", 0);
+    CHECK(per(out, kPlancia).back()["vista"]["estas"]["anteprima"] == "Arancini");
+    const std::string attesa = per(out, kPubblico).back().dump();
+    CHECK(attesa.find("Piatti tipici regionali") != std::string::npos);
+    CHECK(attesa.find("Arancini") == std::string::npos);  // l'oggetto in arrivo resta in plancia
+
+    out = s.invia("MOSTRA_DOMANDA");
     const json vp = per(out, kPlancia).back()["vista"];
     CHECK(vp["estas"]["oggetto"] == "Arancini");
     CHECK(vp["estas"]["oggettoAppartiene"] == true);
@@ -127,6 +133,7 @@ TEST_CASE("ripresa dopo un crash: stesso stato, registro che continua") {
         s.invia("AVVIA_SERATA");
         s.invia("SCEGLI_MODALITA", 0);
         s.invia("SCEGLI_CATEGORIA", 0);
+        s.invia("MOSTRA_DOMANDA");
         s.invia("SELEZIONA", 1);
         s.invia("ANNULLA");
         file = s.regia.file_registro();
@@ -134,9 +141,9 @@ TEST_CASE("ripresa dopo un crash: stesso stato, registro che continua") {
     Sala ripresa(d);
     CHECK(ripresa.regia.file_registro() == file);
     CHECK(ripresa.regia.partita().serata().stato() == Serata::Stato::InGioco);
-    CHECK(ripresa.regia.partita().registro().size() == 3);  // il SELEZIONA è stato annullato
+    CHECK(ripresa.regia.partita().registro().size() == 4);  // il SELEZIONA è stato annullato
     ripresa.invia("SELEZIONA", 0);
-    CHECK(RegistroSuFile::leggi(file).eventi.size() == 6);
+    CHECK(RegistroSuFile::leggi(file).eventi.size() == 7);
 }
 
 TEST_CASE("nuova partita: rifiutata in gioco, ammessa nella lobby; serata chiusa non si riprende") {

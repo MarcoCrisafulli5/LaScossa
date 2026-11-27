@@ -70,6 +70,7 @@ Esito CicloDomanda::su_mostrata(const Evento& e, Traccia* t) {
         case TipoEvento::BlackoutOn:
         case TipoEvento::BlackoutOff:
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Conferma:
         case TipoEvento::PassaTurno:
@@ -106,6 +107,7 @@ Esito CicloDomanda::su_selezionata(const Evento& e, Traccia* t) {
         case TipoEvento::BlackoutOn:
         case TipoEvento::BlackoutOff:
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::PassaTurno:
         case TipoEvento::MostraRiquadro:
@@ -150,6 +152,7 @@ Esito CicloDomanda::su_sbagliata(const Evento& e, Traccia* t) {
         case TipoEvento::BlackoutOn:
         case TipoEvento::BlackoutOff:
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Conferma:
         case TipoEvento::PassaTurno:

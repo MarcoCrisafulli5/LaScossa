@@ -20,6 +20,7 @@ std::string_view nome(TipoEvento t) {
         case TipoEvento::ConfermaSbagliata: return "CONFERMA_SBAGLIATA";
         case TipoEvento::Rivela: return "RIVELA";
         case TipoEvento::ScegliCategoria: return "SCEGLI_CATEGORIA";
+        case TipoEvento::MostraDomanda: return "MOSTRA_DOMANDA";
         case TipoEvento::ProssimaDomanda: return "PROSSIMA_DOMANDA";
         case TipoEvento::Seleziona: return "SELEZIONA";
         case TipoEvento::Conferma: return "CONFERMA";

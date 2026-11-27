@@ -118,6 +118,7 @@ Esito Serata::globale(const Evento& e, Traccia* t) {
         case TipoEvento::FineModalita:
         case TipoEvento::ChiudiSerata:
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Seleziona:
         case TipoEvento::Conferma:
@@ -150,6 +151,7 @@ Esito Serata::su_lobby(const Evento& e, Traccia* t) {
         case TipoEvento::FineModalita:
         case TipoEvento::ChiudiSerata:
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Seleziona:
         case TipoEvento::Conferma:
@@ -193,6 +195,7 @@ Esito Serata::su_scelta_modalita(const Evento& e, Traccia* t) {
         case TipoEvento::AvviaSerata:
         case TipoEvento::FineModalita:
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Seleziona:
         case TipoEvento::Conferma:
@@ -220,6 +223,7 @@ Esito Serata::su_in_gioco(const Evento& e, Traccia* t) {
         case TipoEvento::NascondiRiquadro:
         case TipoEvento::AggiornaRiquadro: return globale(e, t);
         case TipoEvento::ScegliCategoria:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Seleziona:
         case TipoEvento::Conferma:

@@ -57,6 +57,7 @@ TEST_CASE("annulla: torna allo stato precedente rigiocando il registro") {
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    CHECK(p.applica(ev(TipoEvento::MostraDomanda)));
     CHECK(p.applica(ev(TipoEvento::Seleziona, Estas::kNonEstas)));  // clic sbagliato del conduttore
     CHECK(p.applica(ev(TipoEvento::Conferma)));
 
@@ -70,7 +71,13 @@ TEST_CASE("annulla: torna allo stato precedente rigiocando il registro") {
     REQUIRE(estas != nullptr);
     CHECK(estas->domanda()->stato() == CicloDomanda::Stato::Mostrata);
     CHECK(estas->concorrente_di_turno() == 0);
-    CHECK(p.registro().size() == 3);
+    CHECK(p.registro().size() == 4);
+
+    CHECK(p.applica(ev(TipoEvento::Annulla)));  // annulla "mostra oggetto": torna l'attesa
+    estas = dynamic_cast<const Estas*>(p.serata().modalita());
+    REQUIRE(estas != nullptr);
+    CHECK(estas->stato() == Estas::Stato::AttesaOggetto);
+    CHECK(estas->giocati(0) == 0);
 }
 
 TEST_CASE("annulla con registro vuoto è rifiutato") {
@@ -83,12 +90,15 @@ TEST_CASE("la traccia registra ogni transizione con macchina, stati ed evento") 
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    CHECK(p.applica(ev(TipoEvento::MostraDomanda)));
     CHECK(p.applica(ev(TipoEvento::Seleziona, Estas::kEstas)));
-    REQUIRE(p.traccia().size() == 4);
+    REQUIRE(p.traccia().size() == 5);
     CHECK(p.traccia()[0].macchina == "Serata");
     CHECK(p.traccia()[2].macchina == "Estas");
-    CHECK(p.traccia()[3].macchina == "Domanda");
-    CHECK(p.traccia()[3].a == "Selezionata");
+    CHECK(p.traccia()[2].a == "AttesaOggetto");
+    CHECK(p.traccia()[3].a == "OggettoInGioco");
+    CHECK(p.traccia()[4].macchina == "Domanda");
+    CHECK(p.traccia()[4].a == "Selezionata");
 }
 
 TEST_CASE("replay di 10.000 eventi: misura per decidere sulle istantanee") {
@@ -100,6 +110,7 @@ TEST_CASE("replay di 10.000 eventi: misura per decidere sulle istantanee") {
     std::vector<Evento> eventi = {ev(TipoEvento::AvviaSerata), ev(TipoEvento::ScegliModalita, kEstas),
                                   ev(TipoEvento::ScegliCategoria, 0)};
     while (eventi.size() < 10'000) {
+        eventi.push_back(ev(TipoEvento::MostraDomanda));
         eventi.push_back(ev(TipoEvento::Seleziona, Estas::kEstas));
         eventi.push_back(ev(TipoEvento::Conferma));
         eventi.push_back(ev(TipoEvento::ProssimaDomanda));
@@ -110,6 +121,8 @@ TEST_CASE("replay di 10.000 eventi: misura per decidere sulle istantanee") {
     const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - inizio).count();
     MESSAGE("replay di " << eventi.size() << " eventi: " << ms << " ms");
     CHECK(ms < 100);
+    CHECK(p.rifiutati().empty());  // la sequenza è valida: il replay misura eventi veri
+    CHECK(p.registro().size() == eventi.size());
 }
 
 TEST_CASE("riquadro punteggio: aggiorna, mostra, nascondi in ogni stato aperto") {
@@ -140,6 +153,7 @@ TEST_CASE("rivela in Estas passa al ciclo della domanda") {
     CHECK(p.applica(ev(TipoEvento::AvviaSerata)));
     CHECK(p.applica(ev(TipoEvento::ScegliModalita, kEstas)));
     CHECK(p.applica(ev(TipoEvento::ScegliCategoria, 0)));
+    CHECK(p.applica(ev(TipoEvento::MostraDomanda)));
     CHECK(p.applica(ev(TipoEvento::Rivela)));
     const auto* estas = dynamic_cast<const Estas*>(p.serata().modalita());
     REQUIRE(estas != nullptr);

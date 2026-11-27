@@ -10,3 +10,5 @@ dati/partite/
 
 # impostazioni personali di Claude Code
 .claude/settings.local.json
+
+.claude/

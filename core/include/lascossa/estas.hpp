@@ -1,6 +1,10 @@
 // Modalità 1 - Estas o non Estas.
 // Una categoria (es. "Piatti tipici regionali"), una serie di oggetti: il concorrente dice
 // se l'oggetto appartiene (Estas, opzione 0) o no (Non Estas, opzione 1).
+//
+// SceltaCategoria -> AttesaOggetto -> (MOSTRA_DOMANDA) OggettoInGioco -> (PROSSIMA_DOMANDA)
+// AttesaOggetto ... -> CategoriaFinita. In AttesaOggetto il pubblico vede solo la categoria,
+// così i conduttori possono soffermarsi su regole e dubbi prima di rivelare l'oggetto.
 #pragma once
 
 #include <optional>
@@ -25,7 +29,7 @@ struct CategoriaEstas {
 
 class Estas final : public Modalita {
 public:
-    enum class Stato { SceltaCategoria, OggettoInGioco, CategoriaFinita };
+    enum class Stato { SceltaCategoria, AttesaOggetto, OggettoInGioco, CategoriaFinita };
 
     static constexpr int kEstas = 0;
     static constexpr int kNonEstas = 1;
@@ -40,6 +44,8 @@ public:
     Stato stato() const { return stato_; }
     int categoria() const { return categoria_; }
     const OggettoEstas* oggetto_corrente() const;
+    // In AttesaOggetto: l'oggetto che MOSTRA_DOMANDA porterà in gioco (anteprima per la plancia).
+    const OggettoEstas* prossimo_oggetto() const;
     const CicloDomanda* domanda() const { return domanda_ ? &*domanda_ : nullptr; }
     int concorrente_di_turno() const { return turni_.corrente(); }
     int numero_concorrenti() const { return turni_.numero(); }
@@ -53,6 +59,7 @@ public:
 
 private:
     Esito su_scelta_categoria(const Evento& e, Traccia* t);
+    Esito su_attesa_oggetto(const Evento& e, Traccia* t);
     Esito su_oggetto_in_gioco(const Evento& e, Traccia* t);
     Esito su_categoria_finita(const Evento& e, Traccia* t);
 

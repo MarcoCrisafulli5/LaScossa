@@ -37,6 +37,7 @@ const Estas* come_estas(const Modalita* m) {
 
 EstasPubblico estas_pubblico(const Estas& m) {
     EstasPubblico v;
+    v.stato = std::string(m.nome_stato());
     if (m.categoria() >= 0) {
         v.categoria = m.categorie()[static_cast<std::size_t>(m.categoria())].nome;
     }
@@ -61,6 +62,10 @@ EstasPlancia estas_plancia(const Estas& m) {
     v.categoria_corrente = m.categoria();
     v.concorrente_di_turno = m.concorrente_di_turno();
     v.numero_concorrenti = m.numero_concorrenti();
+    if (const OggettoEstas* p = m.prossimo_oggetto()) {
+        v.anteprima = p->nome;
+        v.anteprima_appartiene = p->appartiene;
+    }
     const OggettoEstas* o = m.oggetto_corrente();
     const CicloDomanda* d = m.domanda();
     if (o != nullptr && d != nullptr) {
@@ -105,6 +110,7 @@ std::vector<int> argomenti(TipoEvento t, const Serata& s) {
         case TipoEvento::NascondiRiquadro:
         case TipoEvento::AggiornaRiquadro:
         case TipoEvento::RicaricaContenuti:
+        case TipoEvento::MostraDomanda:
         case TipoEvento::ProssimaDomanda:
         case TipoEvento::Conferma:
         case TipoEvento::ConfermaGiusta:
